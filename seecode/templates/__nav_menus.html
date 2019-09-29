@@ -1,0 +1,88 @@
+<aside class="main-sidebar">
+  <!-- sidebar: style can be found in sidebar.less -->
+  <section class="sidebar">
+    <!-- Sidebar user panel -->
+    <!-- sidebar menu: : style can be found in sidebar.less -->
+    <ul class="sidebar-menu" data-widget="tree">
+      <li class="header">MAIN NAVIGATION&nbsp;&nbsp;-&nbsp;&nbsp;<span style="font-size: 10px;">v {{ version }}</span></li>
+      <li class="{%if nav in " dashboard" %}active{%endif%}">
+      <a href="/"><i class="fa fa-dashboard"></i> <span>DASHBOARD</span><span class="pull-right-container"></span></a>
+      </li>
+     {% if perm.project %}
+      <!--项目管理-->
+      <li class="treeview {% if nav in " pro" %}menu-open active{%endif%}">
+      <a href="#"><i class="fa fa-database"></i> <span>项目管理</span>
+        <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>
+      </a>
+      <ul class="treeview-menu">{% if perm.project.view_projectinfo %}
+        <li><a href="/project/"><i class="fa fa-circle-o"></i> 项目列表</a></li>{%endif%}{% if perm.project.view_applicationinfo %}
+        <li><a href="/project/app/"><i class="fa fa-circle-o"></i> 应用列表</a></li>{%endif%}{% if perm.project.view_dependentinfo %}
+        <li><a href="/project/component/"><i class="fa fa-circle-o"></i> 依赖组件</a></li>{%endif%}{% if perm.project.view_memberinfo %}
+        <li><a href="/project/member/"><i class="fa fa-circle-o"></i> 成员信息</a></li>{%endif%}
+      </ul>
+      </li>
+      <!--项目管理-->
+      {%endif%}
+
+      {% if perm.scan %}
+      <!--任务管理-->
+      <li class="treeview {% if nav in " scan" %}menu-open active{%endif%}">
+      <a href="#"><i class="fa fa-tasks"></i> <span>任务管理</span>
+        <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>
+      </a>
+      <ul class="treeview-menu">{% if perm.scan.view_scanprofileinfo %}
+        <li><a href="/scan/template/"><i class="fa fa-circle-o"></i> 扫描模板</a></li>{%endif%}{% if perm.scan.view_taskinfo %}
+        <li><a href="/scan/task/"><i class="fa fa-circle-o"></i> 扫描任务</a></li>{%endif%}{% if perm.scan.view_issueinfo %}
+        <li><a href="/scan/issue/"><i class="fa fa-circle-o"></i> 扫描结果</a></li>{%endif%}
+      </ul>
+      </li>
+      <!--任务管理-->
+      {%endif%}
+
+      {% if perm.tactic %}
+      <!--策略管理-->
+      <li class="treeview {% if nav in " tactic" %}menu-open active{%endif%}">
+      <a href="#"><i class="fa fa-book"></i> <span>引擎管理</span>
+        <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>
+      </a>
+      <ul class="treeview-menu">{% if perm.tactic.view_engineinfo %}
+        <li><a href="/tactic/engine/"><i class="fa fa-circle-o"></i> 引擎列表</a></li>{%endif%}{% if perm.tactic.view_tacticinfo %}
+        <li><a href="/tactic/rule/"><i class="fa fa-circle-o"></i> 规则策略</a></li>{%endif%}{% if perm.tactic.view_vulninfo %}
+        <li><a href="/tactic/kb/"><i class="fa fa-circle-o"></i> 漏洞知识</a></li>{%endif%}
+      </ul>
+      </li>
+      <!--策略管理-->
+      {%endif%}
+
+      {% if perm.node %}
+      <!--节点管理-->
+      <li class="treeview {% if nav in " node" %}menu-open active{%endif%}">
+      <a href="#"><i class="fa fa-plug"></i> <span>节点管理</span>
+        <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>
+      </a>
+      <ul class="treeview-menu">{% if perm.node.view_hostinfo %}
+        <li><a href="/node/"><i class="fa fa-circle-o"></i> 集群列表</a></li>{%endif%}{% if perm.node.view_upgradepackageinfo %}
+        <li><a href="/node/upgrade/"><i class="fa fa-circle-o"></i> 升级列表</a></li>{%endif%}
+      </ul>
+      </li>
+      <!--节点管理-->
+      {%endif%}
+
+      {% if perm.system or perm.auth %}
+      <!--系统管理-->
+      <li class="treeview {% if nav in " sys" %}menu-open active{%endif%}">
+      <a href="#"><i class="fa fa-gears"></i> <span>系统管理</span>
+        <span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>
+      </a>
+      <ul class="treeview-menu">{% if perm.auth.view_user %}
+        <li><a href="/sys/account/"><i class="fa fa-circle-o"></i> 账户信息</a></li>{%endif%}{% if perm.system.view_languageinfo %}
+        <li><a href="/sys/lang/"><i class="fa fa-circle-o"></i> 开发语言</a></li>{%endif%}{% if perm.system.view_configinfo %}
+        <li><a href="/sys/settings/"><i class="fa fa-circle-o"></i> 系统设置</a></li>{%endif%}{% if perm.system.view_schedinfo %}
+        <li><a href="/sys/service/"><i class="fa fa-circle-o"></i> 定时任务</a></li>{%endif%}{% if perm.system.view_sysloginfo %}
+        <li><a href="/sys/log/"><i class="fa fa-circle-o"></i> 系统日志</a></li>{%endif%}
+      </ul>
+      </li>
+      {%endif%}
+    </ul>
+  </section>
+</aside>

@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <h1>任务管理
+      <small></small>
+    </h1>
+    <ol class="breadcrumb">
+      <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
+      <li>任务管理</li>
+      <li class="active">扫描结果</li>
+    </ol>
+  </section>
+  <!-- Main content -->
+  <section class="content">
+    <div class="box">
+      <div class="box-header with-border">
+        <h6 class="box-title"> 结果列表</h6>
+        <!-- /.box-tools -->
+      </div>
+      <!-- /.box-header -->
+      <div class="box-body">
+        <div class="row">
+          <div class="col-md-10">
+            <form class="form-inline" role="form">
+              <div class="form-group margin-r-5">
+                <select class="form-control" name="e">
+                  <option value="" selected="selected">引擎</option>{%for item in engine_list%}
+                  <option value="{{item.id}}" {%if item.id|slugify == e%}selected{%endif%}>{{item.name}}</option>{%endfor%}
+                </select>
+              </div>
+              <div class="form-group margin-r-5">
+                <select class="form-control" name="c">
+                  <option value="" selected="selected">策略类型</option>{% for item in issues_type %}
+                  <option value="{{ item.0 }}" {% ifequal item.0|slugify c %} selected{% endifequal %}>{{ item.1 }}
+                  </option>{% endfor %}
+                </select>
+              </div>
+              <div class="form-group margin-r-5">
+                <select class="form-control" name="r">
+                  <option value="" selected="selected">风险</option>{% for item in risk_list %}
+                  <option value="{{ item.0 }}" {% ifequal item.0|slugify r %} selected{% endifequal %}>{{ item.1 }}
+                  </option>{% endfor %}
+                </select>
+              </div>
+               <div class="form-group margin-r-5">
+                <select class="form-control" name="s">
+                  <option value="" selected="selected">状态</option>{% for item in issues_status %}
+                  <option value="{{ item.0 }}" {% ifequal item.0|slugify s %} selected{% endifequal %}>{{ item.1 }}
+                  </option>{% endfor %}
+                </select>
+              </div>
+              <div class="form-group margin-r-5">
+                <select class="form-control" name="a">
+                  <option value="">所有类型</option>
+                  <option value="1" {% ifequal alarm '1' %} selected{% endifequal %}>已告警</option>
+                  <option value="2" {% ifequal alarm '2' %} selected{% endifequal %}>同步SCM</option>
+                </select>
+              </div>
+              <div class="form-group margin-r-5">
+                <select class="form-control" name="d">
+                  <option value="">所有状态</option>
+                  <option value="1" {% ifequal '1' d %} selected{% endifequal %}> 已完成</option>
+                  <option value="2" {% ifequal '2' d %}selected{% endifequal %}> 未完成</option>
+                  <option value="3" {% ifequal '3' d %} selected{% endifequal %}> 误报</option>
+                </select>
+              </div>
+              <div class="form-group margin-r-5">
+                <select name="app" class="form-control select2" id="app" style="width: 220px;">
+                  {%if app_obj%}<option value="{{app_obj.id}}">{{app_obj}} ({{app_obj.module_name}})</option>{%endif%}
+                </select>
+              </div>
+              <div class="form-group margin-r-5">
+                <input class="form-control" value="{{keyword}}" placeholder="关键字" name="k" style="width: 256px">
+              </div>
+              <button type="submit" class="btn bg-navy">查询</button>
+            </form>
+          </div>
+          <div class="col-md-2">
+            <div class="content-toolbar btn-toolbar pull-right clearfix"> </div>
+          </div>
+        </div>
+        <!-- /.box-body -->
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-12">
+        <div class="box">
+          <!-- /.box-header -->
+          <div class="box-body">
+            <table id="example2" class="table table-hover">
+              <thead>
+              <tr>
+                <th width="5%"><input type="checkbox" id="action-toggle"/></th>
+                <th>标题</th>
+                <!--th>策略</th-->
+                <th>应用</th>
+                <th>类型</th>
+                <th>引擎</th>
+                <th>分数</th>
+                <th>风险</th>
+                <th>文件</th>
+                <th>开始行</th>
+                <th>最后提交</th>
+                <th>发现时间</th>
+                <th>状态</th>
+              </tr>
+              </thead>
+              <tbody style="font-size: 1.5rem">{% for item in page.object_list %}
+              <tr>
+                <td><input type="checkbox" value="{{ item.id }}" class="action-select" name="_selected_action"/></td>
+                <td> <a href="/scan/issue/{{ item.id }}/" title="{{ item.title }}">{{item.title }}</a> {%if item.is_send_alarm%}
+                <i class="fa fa-fw fa-bell text-blue" title="已发送告警"></i>{%endif%}</td>
+                <!--td title="{{item.tactic}}">
+                  <a href="/tactic/rule/{{item.tactic.id}}/"><span class="label label-primary">{{ item.tactic.key|slice:20}}</span></a>
+                </td-->
+                <td><a href="/project/app/{{item.app.id}}/" title="{{item.app.module_name}}"><span class="label label-default">{{ item.app}} </span></a></td>
+                <td title="{{item.tactic.get_type_display}}">{%if item.tactic.type == 1%}
+                  <span class="label label-warning">{{ item.tactic.get_type_display|slice:1}} </span>
+                  {%elif item.tactic.type == 2%}<span class="label label-primary">{{ item.tactic.get_type_display|slice:1}} </span>
+                  {%else%}<span class="label label-danger">{{ item.tactic.get_type_display|slice:1}} </span>{%endif%}
+                </td>
+                <td><span class="label label-default" title="{{ item.tactic.engine.name}}">{{ item.tactic.engine.name|slice:1}} </span></td>
+                <td>{{item.tactic.risk_scope|default:"-"}}</td>
+                <td>{%if item.tactic.risk == 1%}
+                  <span class="label label-danger">{{ item.tactic.get_risk_display}}</span>
+                  {%elif item.tactic.risk == 2%}<span class="label label-warning">{{ item.tactic.get_risk_display}}</span>
+                  {%elif item.tactic.risk == 3%}<span class="label label-info">{{ item.tactic.get_risk_display}}</span>
+                  {%elif item.tactic.risk == 4%}<span class="label label-primary">{{ item.tactic.get_risk_display}}</span>
+                  {%elif item.tactic.risk == 5%}<span class="label label-default">{{ item.tactic.get_risk_display}}</span>{%endif%}
+                </td>
+                <td><a href="{{item.report_detail_url}}" target="_blank" title="文件路径：{{ item.file_name}}，点击查看详情">
+                  {{ item.file_name|slice:"-40:"}}</a></td>
+                <td>{{ item.start_line|default:"-"}} 行</td>
+                <td title="{{ item.last_commit_author_email}}">{{ item.last_commit_author|default:"-"}}</td>
+                <td>{{ item.created_at|date:"Y-m-d H:i:s" }}</td>
+                <td>{%if item.status == 1%}
+                  <span class="label label-danger">{{ item.get_status_display}}</span>
+                  {%elif item.status == 2%}<span class="label label-warning">{{ item.get_status_display}}</span>
+                  {%elif item.status == 3%}<span class="label label-success">{{ item.get_status_display}}</span>
+                  {%elif item.status == 4%}<span class="label label-info">{{ item.get_status_display}}</span>
+                  {%elif item.status == 5%}<span class="label label-default">{{ item.get_status_display}}</span>
+                  {%else%}<span class="label bg-purple-active">{{ item.get_status_display}}</span>{%endif%}
+<!--                  <div class="btn-group"><a class="dropdown-toggle" data-toggle="dropdown" href="#" aria-expanded="true">-->
+<!--                      <i class="fa fa-fw fa-angle-double-down"></i></a>-->
+<!--                    <ul class="dropdown-menu model_fields pull-right" role="menu">-->
+<!--                      <li><a href="#" data-toggle="modal" data-target="#modal-business">添加白名单</a></li>-->
+<!--                    </ul>-->
+<!--                  </div>-->
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="10" align="center"><span style="color:#ff0000">没找到相关数据!</span></td>
+              </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+            <div style="text-align: right; border-top: 1px solid #eee">
+              <div class="row">
+                <div class="col-sm-2"></div>
+                <div class="col-sm-10" style="text-align: right">{{ page.render }}</div>
+              </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+        </div>
+        <!-- /.col -->
+      </div>
+    </div>
+    <!-- /.row -->
+  </section>
+  <!-- /.content -->
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="/static/plugins/toastr/toastr.min.js"></script>
+<link href="/static/plugins/toastr/toastr.min.css" rel="stylesheet" type="text/css"/>
+<link rel="stylesheet" href="/static/bower_components/select2/css/select2.min.css">
+<link rel="stylesheet" href="/static/css/AdminLTE.min.css">
+<script src="/static/bower_components/select2/js/select2.full.min.js"></script>
+<script>
+    $(function () {
+        $('.select2').select2();
+        toastr.options = {
+            closeButton: false,
+            debug: false,
+            progressBar: true,
+            onclick: null,
+            showDuration: "300",
+            hideDuration: "1000",
+            timeOut: "5000",
+            extendedTimeOut: "1000",
+            showEasing: "swing",
+            hideEasing: "linear",
+            showMethod: "fadeIn",
+            hideMethod: "fadeOut"
+        };
+        {%if request.GET.errmsg %}
+        toastr.error("{{ request.GET.errmsg }}");
+        {%endif %}
+        {%if request.GET.msg %}
+        toastr.success("{{ request.GET.msg }}");
+        {%endif %}
+
+        $('#group').select2({
+            placeholder: '请选择项目分组',
+            ajax: {
+                delay: 250,
+                url: '/project/group/search/',
+                type: "post",
+                data: function (params) {
+                    var query = {
+                        q: params.term,
+                        csrfmiddlewaretoken: getCookie('csrftoken'),
+                        role: 'group'
+                    };
+                    return query;
+                }, processResults: function (data, params) {
+                    $("#project").select2("val", "");
+                    return {results: data};
+                }
+            }
+        });
+
+        $('#app').select2({
+            placeholder: '请选择应用',
+            ajax: {
+                delay: 250,
+                url: '/project/app/search/',
+                type: "post",
+                data: function (params) {
+                    var query = {
+                        q: params.term,
+                        csrfmiddlewaretoken: getCookie('csrftoken'),
+                        role: 'app',
+                        project_id: $('#project').val()
+                    };
+                    return query;
+                }, processResults: function (data, params) {
+                    return {results: data};
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

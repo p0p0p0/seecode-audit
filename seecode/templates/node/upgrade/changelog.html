@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1>节点管理<small></small></h1>
+    <ol class="breadcrumb">
+      <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
+      <li>节点管理</li>
+        <li><a href="/node/upgrade/">升级列表</a></li>
+      <li class="active">{{model}}</li>
+    </ol>
+    </section>
+    <!-- Main content -->
+    <section class="content">
+        <div class="row">
+            <div class="col-xs-12">
+                <!-- /.box-header -->
+                <div class="nav-tabs-custom">
+                    <ul class="nav nav-tabs">
+                        <li class="active"><a href="#fa-icons" data-toggle="tab">历史记录</a></li>
+                    </ul>
+                    <div class="tab-content">
+                        <!-- base -->
+                        <div class="tab-pane active" id="fa-icons">
+                            <div class="table-responsive">
+                                <div style="background: #fcfcfc; padding: 10px;">
+                                  {{changelog|safe|default:"-"}}
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /#fa-icons -->
+                    </div>
+                    <!-- /.tab-content -->
+                </div>
+                <!-- /.nav-tabs-custom -->
+
+                <!-- /.col -->
+            </div>
+        </div>
+        <!-- /.row -->
+    </section>
+    <!-- /.content -->
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="/static/js/marked.min.js"></script>
+{% endblock %}

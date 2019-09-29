@@ -1,0 +1,160 @@
+<div class="modal fade" id="modal-default">
+  <div class="modal-dialog">
+    <div class="modal-content" style="width: 680px;">
+      <div class="modal-header">
+        <button aria-label="Close" class="close" data-dismiss="modal" type="button">
+          <span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">创建扫描策略</h4>
+      </div>
+      <form class="form-horizontal" enctype="multipart/form-data" method="post">
+        {% csrf_token %}
+        <div class="modal-body">
+          <!-- form start -->
+          <div class="modal-body">
+            <div class="form-group">
+              <label class="col-sm-3 control-label">策略名称(*)：</label>
+              <div class="col-sm-9">
+                <input class="form-control" name="name" placeholder="Sprint 框架反射性 XSS 检测" required type="text">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-3 control-label">Key(*)：</label>
+              <div class="col-sm-9">
+                <input class="form-control" id="rule-key" name="key" placeholder="Java:sprint-reflection-xss" required
+                       type="text">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-3 control-label">扫描引擎：</label>
+              <div class="col-sm-9">
+                <select class="form-control" id="engine" name="engine">{%for item in engine_list%}{% if item.module_name != 'seecode_scanner.lib.engines.sonarscanner' %}
+                  <option value="{{item.name}}">{{item.name}}</option>{%endif%}{%endfor%}
+                </select>
+              </div>
+            </div>
+
+            <hr>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">策略类型：</label>
+                <div class="col-sm-9">
+                  <div class="row">
+                    <div class="col-sm-4">
+                      <select class="form-control" name="tactic_type" style="width: 160px;">
+                        {%for item in tactic_type_list%}
+                        <option value="{{item.0}}">{{item.1}}</option>
+                        {%endfor%}
+                      </select>
+                    </div>
+                    <label class="col-sm-3 control-label">风险级别：</label>
+                    <div class="col-sm-4">
+                      <select class="form-control" name="risk" style="width: 170px;">
+                        {%for risk in risk_list%}
+                        <option value="{{risk.0}}">{{risk.1}}</option>
+                        {%endfor%}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">名单类型：</label>
+                <div class="col-sm-9">
+                  <div class="row">
+                    <div class="col-sm-4">
+                      <select class="form-control" name="nature_type" style="width: 160px;">
+                        <option value="2">黑名单</option>
+                        <option value="1">白名单</option>
+                      </select>
+                    </div>
+                    <label class="col-sm-3 control-label">所属语言：</label>
+                    <div class="col-sm-4">
+                      <select class="form-control" name="lang" style="width: 170px;">
+                        {%for risk in lang_list%}
+                        <option value="{{risk.id}}">{{risk.name}}</option>
+                        {%endfor%}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            <div id="rule">
+              <hr>
+              <div class="form-group">
+                <label class="col-sm-3 control-label">检测类型：</label>
+                <div class="col-sm-9">
+                  <div class="row">
+                    <div class="col-sm-4">
+                      <select class="form-control" id="match_type" name="match_type" style="width: 160px;">
+                        {%for item in match_list%}
+                        <option value="{{item.0}}">{{item.1}}</option>
+                        {%endfor%}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group" id="file_match" style="display: none">
+                <label class="col-sm-3 control-label">文件后缀：</label>
+                <div class="col-sm-9">
+                  <input class="form-control" id="file_ext" name="file_ext" placeholder=".java,.js,.js">
+                </div>
+              </div>
+              <div class="form-group" id="component" style="display: none">
+                <label class="col-sm-3 control-label">匹配字段：</label>
+                <div class="col-sm-9">
+                  <div class="row">
+                    <div class="col-sm-4">
+                      <select class="form-control" name="component_match_type" style="width: 160px;">
+                        {%for item in component_match_list%}
+                        <option value="{{item.0}}">{{item.1}}</option>
+                        {%endfor%}
+                      </select>
+                    </div>
+
+                    <label class="col-sm-3 control-label">组件名称：</label>
+                    <div class="col-sm-4">
+                      <input class="form-control" name="component_name" placeholder="如：fastjson" style="width: 172px">
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-3 control-label">检测正则(*)：</label>
+                <div class="col-sm-9">
+                  <textarea class="form-control" id="rule_regex" name="rule_regex" required rows="4"></textarea>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-3 control-label">正则表标志位：</label>
+                <div class="col-sm-9">
+                  <select class="form-control" name="rule_regex_flag">
+                    <option value="">-</option>
+                    <option value="I">忽略大小写</option>
+                    <option value="M">匹配多行</option>
+                    <option value="I,M">忽略大小写/匹配多行</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <hr>
+            <div class="form-group">
+              <label class="col-sm-3 control-label">关联知识库：</label>
+              <div class="col-sm-9">
+                <input class="form-control" id="kb" placeholder="输入漏洞知识库名称关键字">
+                <input id="kb_id" name="kb_id" type="hidden">
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button class="btn btn-primary" id="submit-rule" type="submit">Save</button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>

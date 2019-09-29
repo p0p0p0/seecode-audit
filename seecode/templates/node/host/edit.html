@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1>子域名搜集
+            <small>{{ model }}</small>
+        </h1>
+        <ol class="breadcrumb">
+            <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
+            <li>信息收集</li>
+            <li><a href="/gather/subdomain">子域名搜集</a></li>
+            <li class="active">{{ model }}</li>
+        </ol>
+    </section>
+    <!-- Main content -->
+    <section class="content">
+        <div class="row">
+            <div class="col-xs-12">
+                <!-- /.box-header -->
+                {% csrf_token %}{% if model%}
+                <input type="hidden" value="{{ model.id }}" name="rule_id" id="policy_template_id"
+                       role="{{model.template.id}}"/>{%endif%}
+                <div class="nav-tabs-custom">
+                    <ul class="nav nav-tabs">
+                        <li class="active"><a href="#fa-icons" data-toggle="tab">基本信息</a></li>
+                        <li><a href="#fa-task" data-toggle="tab">任务列表({{model.task_list.all.count}})</a></li>
+                        <li><a href="#fa-tld" data-toggle="tab">扫描结果</a></li>
+
+                    </ul>
+                    <div class="tab-content">
+                        <!-- base -->
+                        <div class="tab-pane active" id="fa-icons">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <tr>
+                                        <th style="width:180px; padding-left: 35px; border-top: 0">所属组织：</th>
+                                        <td align="left" style="border-top: 0">
+                                            {%if model.org%}
+                                            <a href="/sys/dept/{{model.department.id}}">
+                                                {{ model.org}}</a>
+                                            {%else%}- {%endif%}
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <th style="width:180px; padding-left: 35px;">扫描域名：</th>
+                                        <td>
+                                            <pre class="language-none line-numbers"
+                                                 style="max-height: 286px;"><code>{{model.tld_domain}}</code></pre>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th style="width:180px; padding-left: 35px;">发现规则：</th>
+                                        <td>
+                                            <div>
+                                                {%for item in begin_rules%}
+                                                {% ifequal item.type 1%}
+                                                <b>&middot;</b>
+                                                <span class="label label-primary" style="display: inline-block;
+                                                margin: 1px; font-size: 11px;">&lt;{{item.get_type_display}}&gt;:
+                                                             {{item.wordlist}}</span><br>
+                                                {%else%}
+                                                <b>&middot;</b>
+                                                <span class="label label-primary" style="display: inline-block;
+                                                margin: 1px; font-size: 11px;">&lt;{{item.get_type_display}}&gt;:
+                                                         {{item.get_key_display}}</span>
+                                                <span class="label label-info" style="display: inline-block;
+                                                margin: 1px; font-size: 11px;">长度: {{item.value}}</span><br>
+                                                {%endifequal%}
+                                                {%endfor%}
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <th style="width:180px; padding-left: 35px;">扫描状态：</th>
+                                        <td>
+                                            {%if model.task_list.all%}
+                                            {%if model.status == 0%}
+                                            <span class="label label-warning">
+                                                {{model.get_status_display}}</span>
+                                            {%elif model.status == -1%}
+                                            <span class="label label-danger">
+                                                {{model.get_status_display}}</span>
+                                            {%else%}
+                                            <span class="label label-info">{{ model.get_status_display }}</span>
+                                            {%endif%}
+
+                                            {%else%} 未扫描 {%endif%}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th style="width:180px; padding-left: 35px;">线程数：</th>
+                                        <td>{{ model.threads }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th style="width:180px; padding-left: 35px;">搜索引擎查询开启：</th>
+                                        <td>
+                                            {%if model.enable_search %}<span class="label label-success">是</span>{%else%}
+                                            <span class="label label-warning">否</span>{%endif%}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th style="width:180px; padding-left: 35px;">无记录迭代查询：</th>
+                                        <td>
+                                            {%if model.enable_none_rr %}<span class="label label-success">是</span>{%else%}
+                                            <span class="label label-warning">否</span>{%endif%}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th style="width:180px; padding-left: 35px;">代理池：</th>
+                                        <td>
+                                            {%if model.proxies%}
+                                            <pre>{{ model.proxies }}</pre>
+                                            {%else%}-{%endif%}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th style="width:180px; padding-left: 35px;">创建时间：</th>
+                                        <td>{{ model.created_at|date:"Y-m-d H:i:s" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th></th>
+                                        <td>
+                                            <button onclick="javascript:window.history.back()" class="btn btn-primary">
+                                                返回
+                                            </button>
+                                            <button type="button" class="btn bg-olive margin">执行扫描</button>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- /#fa-icons -->
+
+                        <div class="tab-pane" id="fa-task">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                    <tr>
+                                        <th width="5%"><input type="checkbox" id="action-toggle"/></th>
+                                        <th>开始时间</th>
+                                        <th>结束时间</th>
+                                        <th>配置参数</th>
+                                        <th>执行地址</th>
+                                        <th>状态</th>
+                                        <th>创建时间</th>
+                                    </tr>
+                                    </thead>
+                                    {%for item in model.task_list.all%}
+                                    <tr>
+                                        <td><input type="checkbox" value="{{ item.id }}" class="action-select"
+                                                   name="_selected_action"/></td>
+                                        <td>{{item.start_time|date:"Y-m-d H:i:s"|default:"-"}}</td>
+                                        <td>{{item.end_time|date:"Y-m-d H:i:s"|default:"-"}}</td>
+                                        <td>{{item.config}}</td>
+                                        <td>{{execute_ip|default:"-"}}</td>
+                                        <td>
+                                            {%if item.status == 0 %}
+                                            <span class="label label-warning">
+                                                {{item.get_status_display}}</span>
+                                            {%endif%}
+                                        </td>
+                                        <td>{{item.created_at|date:"Y-m-d H:i:s"}}</td>
+
+                                    </tr>
+                                    {%endfor%}
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane" id="fa-tld">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                    <tr>
+                                        <th>域名</th>
+                                        <th>RR</th>
+                                        <th>VALUE</th>
+                                        <th>发现时间</th>
+                                    </tr>
+                                    </thead>
+                                    {%for item in model.domain_list.all%}
+                                    <tr>
+                                        <td>{{item.full_name}}</td>
+                                        <td>{{item.rr}}</td>
+                                        <td>{{item.value}}</td>
+                                        <td>{{item.created_at|date:"Y-m-d H:i:s"}}</td>
+                                    </tr>
+                                    {%endfor%}
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- /.tab-content -->
+                </div>
+                <!-- /.nav-tabs-custom -->
+
+
+                <!-- /.col -->
+            </div>
+        </div>
+        <!-- /.row -->
+    </section>
+    <!-- /.content -->
+</div>
+{% endblock %}
+
+{% block script %}
+
+<link href="/static/css/prism.css" rel="stylesheet" type="text/css"/>
+<link href="/static/css/prism-line-numbers.css" rel="stylesheet" type="text/css"/>
+<script src="/static/js/prism.js"></script>
+<script src="/static/js/prism-line-numbers.js"></script>
+{% endblock %}

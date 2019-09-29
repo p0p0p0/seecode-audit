@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1>系统管理
+            <small></small>
+        </h1>
+        <ol class="breadcrumb">
+            <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
+            <li>系统管理</li>
+            <li><a href="/sys/log/">系统日志</a></li>
+            <li class="active">{{ model }}</li>
+        </ol>
+    </section>
+    <!-- Main content -->
+    <section class="content">
+        <div class="box">
+            <!-- /.box-header -->
+            <div class="box-body">
+                <div class="row">
+                    <div class="tab-pane active" id="fa-icons">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <tr>
+                                    <th style="width:180px; padding-left: 35px; border-top: 0px;">标题：</th>
+                                    <td align="left" style="border-top: 0px;">{{ model.title }}</td>
+                                </tr>
+                                <tr>
+                                    <th style="width:180px; padding-left: 35px;">模块：</th>
+                                    <td>{{ model.module|default:"-" }}</td>
+                                </tr>
+                                <tr>
+                                    <th style="width:180px; padding-left: 35px;">LEVEL：</th>
+                                    <td>{{ model.get_level_display }}</td>
+                                </tr>
+                                <tr>
+                                    <th style="width:180px; padding-left: 35px;">描述：</th>
+                                    <td>{{ model.description }}</td>
+                                </tr>
+
+                                <tr>
+                                    <th style="width:180px; padding-left: 35px;">堆栈信息：</th>
+                                    <td >
+                                        <pre class="language-bash line-numbers" style="font-size: 12px"><code
+                                        >{{ model.stack_trace|default:"-" }}</code></pre>
+                                    </td>
+                                </tr>
+
+
+                                <tr>
+                                    <th style="width:180px; padding-left: 35px;">发生时间：</th>
+                                    <td>{{ model.created_at|date:"Y-m-d H:i:s" }}</td>
+                                </tr>
+                                <tr>
+                                    <th></th>
+                                    <td>
+                                        <button onclick="javascript:window.history.back()" class="btn btn-primary" id="submit-rule">返回
+                                        </button>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+                <!-- /.box-body -->
+            </div>
+        </div>
+        <!-- /.row -->
+    </section>
+    <!-- /.content -->
+</div>
+{% endblock %}
+
+{% block script %}
+  <link rel="stylesheet" type="text/css" href="/static/css/prism.css">
+    <link href="/static/css/prism-line-numbers.css" rel="stylesheet" type="text/css"/>
+<script src="/static/js/prism.js"></script>
+<script src="/static/js/prism-line-numbers.js"></script>
+{% endblock %}

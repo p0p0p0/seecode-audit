@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <h1>扫描模板 <small>{{ model }}</small></h1>
+    <ol class="breadcrumb">
+      <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
+      <li>任务管理</li>
+      <li><a href="/scan/template/">扫描模板</a></li>
+      <li class="active">{{ model }}</li>
+    </ol>
+  </section>
+  <!-- Main content -->
+  <section class="content">
+    <div class="row">
+      <div class="col-xs-12">
+        <!-- /.box-header -->
+        <div class="nav-tabs-custom">
+          <ul class="nav nav-tabs">
+            <li class="active"><a href="#fa-icons" data-toggle="tab">基本信息</a></li>
+            <li><a href="#fa-engine" data-toggle="tab">引擎设置</a></li>
+          </ul>
+          {%if perm.scan.change_scanprofileinfo%}
+          <form class="form-horizontal" action="/scan/template/" method="post" enctype="multipart/form-data">
+            {% csrf_token %}{% if model%}
+            <input type="hidden" value="{{ model.id }}" name="profile_id"/>{%endif%}{%endif%}
+            <div class="tab-content">
+              <!-- base -->
+              <div class="tab-pane active" id="fa-icons">
+                <div class="table-responsive">
+                  <table class="table">
+                    <tr>
+                      <th style="width:180px; padding-left: 35px; border-top: 0">名称：</th>
+                      <td align="left" style="border-top: 0">
+                        <input class="form-control" name="name" required value="{{ model.name }}" maxlength="100"
+                        onkeyup="this.value=this.value.replace(/[^\w_]/g,'');"/>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">描述：</th>
+                      <td><textarea class="form-control" name="description" rows="2">{{ model.description|default:"" }}</textarea></td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">exclude_dir：</th>
+                      <td><textarea class="form-control" name="exclude_dir" rows="2">{{ model.exclude_dir|default:"" }}</textarea></td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">exclude_ext：</th>
+                      <td><textarea class="form-control" name="exclude_ext" rows="2">{{ model.exclude_ext|default:"" }}</textarea></td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">exclude_file：</th>
+                      <td><textarea class="form-control" name="exclude_file" rows="2">{{ model.exclude_file|default:"" }}</textarea></td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">任务超时(秒)：</th>
+                      <td>
+                        <input type="number" class="form-control" min="300" style="width: 400px" name="task_timeout" value="{{model.task_timeout|default:7200}}">
+                      </td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">创建时间：</th>
+                      <td>{{ model.created_at|date:"Y-m-d H:i:s" }}</td>
+                    </tr>{%if perm.scan.change_scanprofileinfo%}
+                    <tr>
+                      <th></th>
+                      <td>
+                        <button onclick="javascript:window.history.back()" class="btn btn-primary">返回</button>
+                        <button type="submit" class="btn bg-olive margin">修改</button>
+                      </td>
+                    </tr>
+                    {%endif%}
+                  </table>
+                </div>
+              </div>
+              <!-- /#fa-icons -->
+              <div class="tab-pane" id="fa-engine">
+                <div class="table-responsive">
+                  <table class="table" width="99%" style="width: 99%">
+                    {% for item in engines%}
+                    <tr>
+                      <td colspan="2" title="{{item.description}}">
+                        <h4 style="border-left:2px solid burlywood; padding-left: 10px; background: #f1f1f1; height: 40px; line-height: 40px;">{{item.name}}<span class="pull-right" style="font-size: 12px; color:#c1c1c1; padding-right:10px">{{item.description}}</span></h4>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colspan="2" style="width: 9%">
+                        <ul style="list-style: none;padding-left:10px;margin:0">
+                          <li style="line-height: 35px; height:35px;"><input type="checkbox"  value="{{ item.id }}"  name="engine" {%if item in model.engines.all%}checked{%endif%}> 启用引擎 </li>
+                          {%for key, value in  template_conf.items %} {%if key == item.module_name %}
+                          {%for k, v in value.items%}
+                          <li style="padding-bottom:5px;">
+                            <div class="row">
+                              <div class="col-md-4"><input class="form-control" name="{{key}}_key" required placeholder="Key" value="{{k}}"/> </div>
+                              <div class="col-md-4">
+                                <textarea class="form-control" rows="2" name="{{key}}_value" required placeholder="Value">{{v}}</textarea>
+                              </div>
+                            </div>
+                          </li>
+                              {%endfor%} {%endif%}
+                          {%endfor%}
+                        </ul>
+                      </td>
+                    </tr> {%endfor%}{%if perm.scan.change_scanprofileinfo%}
+                    <tr>
+                      <td colspan="2">
+                        <button onclick="javascript:window.history.back()" class="btn btn-primary">返回</button>
+                        <button type="submit" class="btn bg-olive margin">修改</button>
+                      </td>
+                    </tr>{%endif%}
+                  </table>
+                </div>
+              </div>
+
+            </div>
+            <!-- /.tab-content -->
+          </form>
+        </div>
+        <!-- /.nav-tabs-custom -->
+      </div>
+    </div>
+    <!-- /.row -->
+  </section>
+  <!-- /.content -->
+</div>
+{% endblock %}
+
+{% block script %}
+
+{% endblock %}

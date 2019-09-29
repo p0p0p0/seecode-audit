@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <h1>系统管理
+      <small></small>
+    </h1>
+    <ol class="breadcrumb">
+      <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
+      <li>系统管理</li>
+      <li>系统设置</li>
+      <li class="active">编辑</li>
+    </ol>
+  </section>
+  <!-- Main content -->
+  <section class="content">{% if perm.system.change_configinfo%}
+    <form action="/sys/settings/" method="post">{% csrf_token %}
+      <!-- /.box-header -->{%endif%}
+      <div class="nav-tabs-custom">{% if perm.system.change_configinfo%}
+        <span style="float:right;font-size: 12px; padding: 10px;"><a href="/sys/clear/">清除缓存</a></span>{%endif%}
+        <ul class="nav nav-tabs">
+          <li class="active"><a href="#base" data-toggle="tab">基本设置</a></li>
+          <li><a href="#gitlab" data-toggle="tab">扫描设置</a></li>
+          <li><a href="#project" data-toggle="tab">存储设置</a></li>
+          <!--li><a href="#ldap" data-toggle="tab">LDAP设置</a></li-->
+        </ul>
+        <div class="tab-content">
+          <div class="active tab-pane" id="base" style="padding: 10px;">
+            <!-- The timeline -->
+            <table class="table">
+                <tr>
+                    <td colspan="2" style="border-top:0px; ">
+                      <h3>基本信息</h3><hr/>
+                    </td>
+               </tr>
+               <tr>
+                <th style="width:20%;border-top:0px;">网站域名</th>
+                <td align="left" style="border-top:0px;">
+                  <input type="url" class="form-control" value="{{conf.option.seecode_domain}}"
+                         name="seecode_domain" required placeholder="http://codeaudit.example.com">
+                </td>
+              </tr>
+               <tr>
+                <th style="width:20%;border-top:0px;">工作路径</th>
+                <td align="left" style="border-top:0px;">
+                  <input type="type" class="form-control" value="{{conf.option.seecode_workdir}}"
+                         name="seecode_workdir">
+                </td>
+              </tr>
+              <tr>
+                <th>系统日志级别</th>
+                <td align="left" >
+                  <select class="form-control" name="seecode_sys_level" style="width: 220px">
+                  {% for item in log_type %}
+                  <option value="{{ item.0 }}" {%ifequal item.0 conf.option.seecode_sys_level %}selected{%endifequal%}>{{item.1 }}</option>
+                  {%endfor%}
+                </select>
+                </td>
+              </tr>
+              <tr>
+                  <th>节点加密通信</th>
+                  <td align="left" >
+                    <select class="form-control" name="seecode_node_secret" style="width: 220px">
+                      <option value="1" {%if conf.option.seecode_node_secret %}selected{%endif%}>开启</option>
+                      <option value="" {%if not conf.option.seecode_node_secret %}selected{%endif%}>关闭</option>
+                </select>
+                  </td>
+                </tr>
+
+              <tr>
+                  <td colspan="2">
+                    <h3>邮件告警</h3><hr/>
+                  </td>
+             </tr>
+             <tr>
+                <th style="width:20%;border-top:0px;">邮件地址</th>
+                <td align="left" style="border-top:0px;">
+                <textarea class="form-control" name="mail_to_list">{{conf.mail.to_list}}</textarea>
+                </td>
+              </tr>
+              <tr>
+                  <th style="width:20%;">SMTP地址</th>
+                  <td align="left">
+                      <input type="type" class="form-control" value="{{conf.mail.server_ip}}"
+                      name="mail_server_ip">
+                  </td>
+                </tr>
+                <tr>
+                    <th>端口号</th>
+                    <td align="left" >
+                        <input type="number" min=25 max=65535 class="form-control" value="{{conf.mail.server_port}}"
+                        name="mail_server_port">
+                    </td>
+                  </tr>
+                  <tr>
+                      <th>用户名</th>
+                      <td align="left">
+                          <input type="type" class="form-control" value="{{conf.mail.username}}"
+                          name="mail_username">
+                      </td>
+                    </tr>
+                    <tr>
+                        <th>密码</th>
+                        <td align="left">
+                            <input type="password" class="form-control" value="{{conf.mail.password}}"
+                            name="mail_password">
+                        </td>
+                      </tr>
+                      <tr>
+                          <th>发件人邮箱</th>
+                          <td align="left">
+                              <input type="type" class="form-control" value="{{conf.mail.from}}"
+                              name="mail_form">
+                          </td>
+                        </tr>{% if perm.system.change_configinfo%}
+              <tr>
+                <th></th>
+                <td align="left">
+                  <button type="submit" class="btn btn-primary">保存修改</button>
+                  &nbsp;&nbsp;
+                  <button type="button" class="btn btn-warning"
+                          onclick="javascript:window.history.back()">返回
+                  </button>
+                </td>
+              </tr>{%endif%}
+            </table>
+          </div>
+          <!-- /.tab-pane -->
+          <div class="tab-pane" id="gitlab" style="padding: 10px;">
+            <!-- The timeline -->
+            <table class="table">
+              <tr>
+                <td colspan="2" style="border-top:0px; ">
+                  <h3>GitLab</h3><hr/>
+                </td>
+              </tr>
+              <tr>
+                <th style="width:15%;border-top:0px; ">GitLab 地址</th>
+                <td align="left" style="border-top:0px; ">
+                  <input type="type" class="form-control" value="{{conf.gitlab.url}}"
+                         name="gitlab_url">
+                </td>
+              </tr>
+              <tr>
+                <th style="width:15%; ">GitLab API 地址</th>
+                <td align="left" >
+                  <input type="type" class="form-control" value="{{conf.gitlab.api_url}}"
+                         name="gitlab_api_url">
+                </td>
+              </tr>
+              <tr>
+                <th style="width:15%;">GitLab API Token</th>
+                <td align="left">
+                  <input type="type" class="form-control" value="{{conf.gitlab.token}}"
+                         name="gitlab_token">
+                </td>
+              </tr>
+
+              <tr>
+                <th style="width:15%;">GitLab 账号:</th>
+                <td align="left">
+                  <input type="type" class="form-control" value="{{conf.gitlab.account}}"
+                         name="gitlab_account">
+                </td>
+              </tr>
+
+              <tr>
+                <th style="width:15%;">项目活动时间:</th>
+                <td align="left">
+                  <select class="form-control" name="gitlab_activity_month" style="width: 220px">{%for item in month_type%}
+                      <option value="{{item.0}}" {%if conf.gitlab.activity_month == item.0%}selected{%endif%}>{{item.1}}</option>{%endfor%}
+                </select>
+                </td>
+              </tr>
+{% if perm.system.change_configinfo%}
+              <tr>
+                <th style="width:15%"></th>
+                <td align="left">
+                  <button type="submit" class="btn btn-primary">保存修改</button>
+                  &nbsp;&nbsp;
+                  <button type="button" class="btn btn-warning"
+                          onclick="javascript:window.history.back()">返回
+                  </button>
+                </td>
+              </tr>{%endif%}
+            </table>
+          </div>
+          <!-- /.tab-pane -->
+          <div class="tab-pane" id="project" style="padding: 10px;">
+            <!-- The timeline -->
+            <table class="table">
+               <tr>
+                <td colspan="2" style="border-top:0px; ">
+                  <h3>扫描上传</h3><hr/>
+                </td>
+              </tr>
+              <tr>
+                <th style="width:15%;border-top:0px; ">存储方式</th>
+                <td align="left" style="border-top:0px; ">
+                  <select class="form-control" id="project_type" name="upload_type">
+                    <option value="1" {%if conf.project.upload_type == 1%}selected{%endif%}>本地目录</option>
+                    <option value="2" {%if conf.project.upload_type == 2%}selected{%endif%}>FTP上传</option>
+                  </select>
+                </td>
+              </tr>
+              <tr class="local" {%if conf.project.upload_type == 2%}style="display: none" {%endif%}>
+                <th>上传路径</th>
+                <td align="left" >
+                  <input type="type" class="form-control" value="{{conf.project.upload_root}}"
+                         name="local_upload_root">
+                </td>
+              </tr>
+
+              <tr class="ftp" {%if conf.project.upload_type == 1%}style="display: none" {%endif%}>
+                <th style="width:15%; ">FTP 上传地址</th>
+                <td align="left">
+                  <input type="type" class="form-control" value="{{conf.project.ftp_host}}"
+                         name="ftp_host">
+                </td>
+              </tr>
+              <tr class="ftp" {%if conf.project.upload_type == 1%}style="display: none" {%endif%}>
+                <th style="width:15%;">FTP 上传账号</th>
+                <td align="left">
+                  <input type="type" class="form-control" value="{{conf.project.ftp_username}}"
+                         name="ftp_username">
+                </td>
+              </tr>
+
+              <tr class="ftp" {%if conf.project.upload_type == 1%}style="display: none" {%endif%}>
+                <th style="width:15%;">FTP 上传密码</th>
+                <td align="left">
+                  <input type="type" class="form-control" value="{{conf.project.ftp_password}}"
+                         name="ftp_password">
+                </td>
+              </tr>
+
+              <tr class="ftp" {%if conf.project.upload_type == 1%}style="display: none" {%endif%}>
+                <th style="width:15%;">FTP 上传目录</th>
+                <td align="left">
+                  <input type="type" class="form-control" value="{{conf.project.ftp_path}}"
+                         name="ftp_path">
+                </td>
+              </tr>
+              <tr class="ftp" {%if conf.project.upload_type == 1%}style="display: none" {%endif%}>
+                <th style="width:15%;">FTP 上传端口</th>
+                <td align="left">
+                  <input type="type" class="form-control" value="{{conf.project.ftp_port}}"
+                         name="ftp_port">
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2">
+                  <h3>上传参数</h3><hr/>
+                </td>
+              </tr>
+               <tr>
+                <th style="width:15%;border-top:0px;">上传类型</th>
+                <td align="left" style="border-top:0px; ">
+                  <input type="type" class="form-control" value="{{conf.project.upload_file_type}}"
+                         name="upload_file_type" placeholder="运行上传的文件类型，如: .zip,.7z" readonly>
+                </td>
+              </tr>
+               <tr>
+                <th style="width:15%;">上传文件大小(M)</th>
+                <td align="left">
+                  <input type="number" class="form-control" value="{{conf.project.upload_file_size}}" min="1" max="4096"
+                         name="upload_file_size" placeholder="单位：M">
+                </td>
+              </tr>{% if perm.system.change_configinfo%}
+               <tr>
+                <th style="width:15%"></th>
+                <td align="left">
+                  <button type="submit" class="btn btn-primary">保存修改</button>
+                  &nbsp;&nbsp;
+                  <button type="button" class="btn btn-warning"
+                          onclick="javascript:window.history.back()">返回
+                  </button>
+                </td>
+              </tr>{%endif%}
+            </table>
+          </div>
+          <!-- /.tab-pane -->
+
+        </div>
+        <!-- /.tab-content -->
+
+      </div>
+      <!-- /.nav-tabs-custom -->
+
+      <!-- /.col -->
+    </form>
+    <!-- /.col -->
+    <!-- /.row -->
+  </section>
+  <!-- /.content -->
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    $(function () {
+        $("#project_type").change(function () {
+            var sel = $(this).val();
+            switch (sel) {
+                case "1":
+                    $(".local").show();
+                    $(".ftp").hide();
+                    break;
+                case "2":
+                    $(".local").hide();
+                    $(".ftp").show();
+                    break;
+            }
+
+        });
+    });
+</script>
+
+{% endblock %}

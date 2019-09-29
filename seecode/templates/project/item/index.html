@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <h1>项目管理 <small>{% if archive%}已归档项目{%endif%}</small></h1>
+    <ol class="breadcrumb">
+      <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
+      <li>项目管理</li>
+      <li class="active">项目列表</li>
+    </ol>
+  </section>
+  <!-- Main content -->
+  <section class="content">
+    <div class="box">
+      <div class="box-header with-border">
+        <h6 class="box-title"> 项目列表</h6>
+        <!-- /.box-tools -->
+      </div>
+      <!-- /.box-header -->
+      <div class="box-body">
+        <div class="row">
+          <div class="col-md-10">
+            <form class="form-inline" role="form">
+              <input name="archive" type="hidden" value="{{archive}}">
+              <div class="form-group margin-r-5">
+                <select class="form-control select2 p-group" id="s-group" name="g" style="min-width: 220px;">
+                  {%if group_obj%}
+                  <option value="{{group_obj.id}}">{{group_obj}}</option>
+                  {%endif%}
+                </select>
+              </div>
+              <div class="form-group margin-r-5">
+                <select class="form-control select2" id="project" name="_p" style="min-width: 220px;">
+                  {%if project_obj%}
+                  <option value="{{project_obj.id}}">{{project_obj}}</option>
+                  {%endif%}
+                </select>
+              </div>
+              <div class="form-group">
+                <select class="form-control margin-r-5" name="s">
+                  <option value="">类型</option>
+                  {% for item in project_type %}
+                  <option {%ifequal item.0 s%}selected{%endifequal%}  value="{{ item.0 }}" >{{item.1 }}</option>
+                  {%endfor%}
+                </select>
+              </div>
+              <button class="btn bg-navy" type="submit">查询</button>
+            </form>
+          </div>
+          <div class="col-md-2">
+            <div class="content-toolbar btn-toolbar pull-right clearfix">
+              <div class="btn-group">
+                <a class="dropdown-toggle btn btn-default btn-sm" data-toggle="dropdown" href="#">
+                  <i class="fa fa-list-alt"></i> {% if archive%}已归档项目{%else%}其他操作{%endif%}
+                  <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu model_fields pull-right" role="menu">{% if perm.project.view_groupinfo %}
+                  <li><a href="/project/group/">项目分组</a></li>{%endif%}
+                  <li class="divider"></li>{% if perm.project.add_projectinfo %}
+                  <li><a data-target="#modal-default" data-toggle="modal" href="#"> 创建项目</a></li>{%endif%}
+                  <li class="divider"></li>
+                  <li><a href="/project/?archive=1"> 已归档项目</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- /.box-body -->
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-12">
+        <div class="box">
+          <!-- /.box-header -->
+          <div class="box-body">
+            <table class="table table-hover" id="example2">
+              <thead>
+              <tr>
+                <th width="5%"><input id="action-toggle" type="checkbox"/></th>
+                <th>名称</th>
+                <th>分组</th>
+                <th>类型</th>
+                <th>同步时间</th>
+                <th>操作</th>
+              </tr>
+              </thead>
+              <tbody style="font-size: 1.5rem">{% for item in page.object_list %}
+              <tr>
+                <td><input class="action-select" git_id="{{item.git_id}}" name="_selected_action" type="checkbox" value="{{ item.id }}"/></td>
+                <td><a href="/project/{{ item.id }}" style="text-transform: Lowercase" title="{{ item.name }}">{{item.name }}</a>
+                  {%if item.web_url %}<a href="{{ item.web_url }}" target="_blank"><i class="fa fa-location-arrow"></i></a>{%endif%}
+                </td>
+                <td><span class="label label-primary" style="text-transform: Uppercase">{{ item.group}}</span></td>
+                <td>{% if item.type == 1%}<span class="label label-info">{{ item.get_type_display}}</span>{%else%}
+                  <span class="label label-default">{{ item.get_type_display}}</span>{%endif%}
+                </td>
+
+                <td>{{ item.updated_at|date:"Y-m-d H:i:s" }}</td>
+                <td><a href="/project/app/?pro={{item.id}}">应用列表</a></td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td align="center" colspan="10"><span style="color:#ff0000">没找到相关项目!</span></td>
+              </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+            <div style="text-align: right; border-top: 1px solid #eee">
+              <div class="row">
+                <div class="col-sm-2">
+                  <div class="btn-group pagination" style="float: left">
+                    <button class="btn btn-info" type="button">Action</button>
+                    <button aria-expanded="true" class="btn btn-info dropdown-toggle" data-toggle="dropdown" type="button">
+                      <span class="caret"></span>
+                      <span class="sr-only">Toggle Dropdown</span>
+                    </button>
+                    <ul class="dropdown-menu" role="menu">{% if perm.project.delete_projectinfo %}
+                      <li><a class="btn-ops" href="#" role="del">删除项目</a></li>{%endif%}
+                      <li class="divider"></li>{% if perm.project.change_projectinfo %}
+                      <li><a class="btn-ops" href="#" role="archive">标记归档</a></li>
+                      <li><a class="btn-ops" href="#" role="unarchive">取消归档</a></li>{%endif%}
+                    </ul>
+                  </div>
+                </div>
+                <div class="col-sm-10" style="text-align: right">{{ page.render }}</div>
+              </div>
+            </div>
+            <!-- /.box-body -->
+          </div>{% if perm.project.add_projectinfo %}
+          <!-- /.box -->
+          {% include "./__data_add_modal.html" %}{%endif%}
+          <!-- /.box -->
+        </div>
+        <!-- /.col -->
+      </div>
+    </div>
+    <!-- /.row -->
+  </section>
+  <!-- /.content -->
+</div>
+
+{% endblock %}
+
+
+{% block script %}
+<script src="/static/plugins/toastr/toastr.min.js"></script>
+<link href="/static/plugins/toastr/toastr.min.css" rel="stylesheet" type="text/css"/>
+<link href="/static/bower_components/select2/css/select2.min.css" rel="stylesheet">
+<link href="/static/css/AdminLTE.min.css" rel="stylesheet">
+<script src="/static/bower_components/select2/js/select2.full.min.js"></script>
+
+<script>
+    $(function () {
+        $('.select2').select2();
+        toastr.options = {
+            closeButton: false,
+            debug: false,
+            progressBar: true,
+            onclick: null,
+            showDuration: "300",
+            hideDuration: "1000",
+            timeOut: "5000",
+            extendedTimeOut: "1000",
+            showEasing: "swing",
+            hideEasing: "linear",
+            showMethod: "fadeIn",
+            hideMethod: "fadeOut"
+        };
+        {%if request.GET.errmsg %}
+        toastr.error("{{ request.GET.errmsg }}");
+        {%endif %}
+        {%if request.GET.msg %}
+        toastr.success("{{ request.GET.msg }}");
+        {%endif %}
+
+        $('.p-group').select2({
+            placeholder: '请选择项目分组',
+            ajax: {
+                delay: 250,
+                url: '/project/group/search/',
+                type: "post",
+                data: function (params) {
+                    var query = {
+                        q: params.term,
+                        csrfmiddlewaretoken: getCookie('csrftoken'),
+                        role: 'group'
+                    };
+                    return query;
+                }, processResults: function (data, params) {
+                    $("#project").select2("val", "");
+                    return {results: data};
+                }
+            }
+        });
+
+        $('#project').select2({
+            placeholder: '请选择项目',
+            ajax: {
+                delay: 250,
+                url: '/project/group/search/',
+                type: "post",
+                data: function (params) {
+                    var query = {
+                        q: params.term,
+                        csrfmiddlewaretoken: getCookie('csrftoken'),
+                        role: 'project',
+                        group_id: $('#s-group').val()
+                    };
+                    return query;
+                }, processResults: function (data, params) {
+                    return {results: data};
+                }
+            }
+        });
+
+        $('#app').select2({
+            placeholder: '请选择应用',
+            ajax: {
+                delay: 250,
+                url: '/project/app/search/',
+                type: "post",
+                data: function (params) {
+                    var query = {
+                        q: params.term,
+                        csrfmiddlewaretoken: getCookie('csrftoken'),
+                        role: 'app',
+                        project_id: $('#project').val()
+                    };
+                    return query;
+                }, processResults: function (data, params) {
+                    return {results: data};
+                }
+            }
+        });
+
+        $('#p-type').change(function () {
+            var pType = $(this).val();
+            switch (pType) {
+                case "1":
+                    $("#online").show();
+                    $("#online input").attr("required", "required");
+                    $("#offline").hide();
+                    $("#offline input").removeAttr("required");
+                    break;
+                case "2":
+                    $("#online").hide();
+                    $("#online input").removeAttr("required");
+                    $("#offline").show();
+                    $("#offline input").attr("required", "required");
+                    break;
+            }
+        });
+
+        $(".btn-ops").click(function () {
+            var ps = '';
+            var role = $(this).attr('role');
+
+            $("input[name='_selected_action']:checkbox:checked").each(function () {
+                ps = ps + $(this).val() + ",";
+            });
+
+            if (ps) {
+                if (!confirm('确定操作选中的数据吗?')) return false;
+                var csrftoken = getCookie('csrftoken');
+
+                $.post("/project/batch/", {"ids": ps, "csrfmiddlewaretoken": csrftoken, 'action': role},
+                        function (data) {
+                            window.location.reload();
+                });
+
+            }
+
+
+        });
+
+    });
+</script>
+
+{% endblock %}

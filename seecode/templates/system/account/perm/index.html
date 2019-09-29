@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <h1>系统管理
+      <small></small>
+    </h1>
+    <ol class="breadcrumb">
+      <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
+      <li>系统管理</li>
+      <li><a href="/sys/account">账户管理</a></li>
+      <li class="active">权限管理</li>
+    </ol>
+  </section>
+  <!-- Main content -->
+  <section class="content">
+    <div class="box">
+      <div class="box-header with-border">
+          <span style="float: right;font-size: 12px;">{%if perm.auth.add_permission%}
+            <a href="#" data-toggle="modal" data-target="#modal-default"> 添加</a>{%endif%}
+          </span>
+        <h6 class="box-title">权限列表</h6>
+        <!-- /.box-tools -->
+      </div>
+      <!-- /.box-header -->
+      <div class="box-body">
+        <div>
+          <form class="form-inline m-bot15" role="form">
+            <div class="form-group margin-r-5">
+              <select class="form-control" name="m">
+                <option value="" selected="selected">所有模块</option>{% for item in modules%}
+                <option value="{{item.id}}" {%ifequal item.id|stringformat:"i" module%}selected{%endifequal%}>
+                {{item.app_label}}.{{item.model}}</option>{%endfor%}
+              </select>
+            </div>
+            <div class="form-group margin-r-5">
+              <input class="form-control" value="{{name}}" placeholder="权限名称" name="n">
+            </div>
+            <button type="submit" class="btn bg-navy">开始</button>
+          </form>
+        </div>
+      </div>
+      <!-- /.box-body -->
+    </div>
+
+    <div class="row">
+      <div class="col-xs-12">
+        <div class="box">
+          <!-- /.box-header -->
+          <div class="box-body">
+            <table id="example2" class="table table-hover">
+              <thead>
+              <tr>
+                <th width="5%"><input type="checkbox" id="action-toggle"/></th>
+                <th width="15%">权限名称</th>
+                <th width="15%">Key</th>
+                <th width="15%">所属模块</th>
+                <th>模块说明</th>
+              </tr>
+              </thead>
+              <tbody>{% for item in page.object_list %}
+              <tr>
+                <td><input type="checkbox" value="{{ item.id }}" class="action-select" name="_selected_action"/>
+                </td>
+                <td><a href="/sys/account/perm/{{ item.id }}" title="{{ item.name }}">{{ item.name }}</a></td>
+                <td>{{ item.codename }}</td>
+                <td><span class="label label-primary">{{item.content_type.app_label}}.{{item.content_type.model}}</span>
+                </td>
+                <td>{{ item.content_type }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="10" align="center"><span style="color:#ff0000">没找到相关数据!</span></td></tr>
+              {% endfor %}
+              </tbody>
+            </table>
+
+            <div style="text-align: right; border-top: 1px solid #eee">
+              <div class="row">
+                <div class="col-sm-2">{%if perm.auth.delete_permission%}
+                  <div class="btn-group pagination" style="float: left">
+                    <button type="button" class="btn btn-info">Action</button>
+                    <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
+                      <span class="caret"></span>
+                      <span class="sr-only">Toggle Dropdown</span>
+                    </button>
+                    <ul class="dropdown-menu" role="menu">
+                      <li><a href="#" class="btn-perm">删除所选权限</a></li>
+                    </ul>
+                  </div>{%endif%}
+                </div>
+                <div class="col-sm-10" style="text-align: right">{{ page.render }}</div>
+              </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->{%if perm.auth.add_permission%}
+          {% include "../inc/__perm_add_modal.html" %}{%endif%}
+          <!-- /.box -->
+        </div>
+        <!-- /.col -->
+      </div>
+    </div>
+    <!-- /.row -->
+  </section>
+  <!-- /.content -->
+</div>
+{% endblock %}
+
+{% block script %}
+{%if perm.auth.delete_permission%}
+<script>
+    $(function () {
+        $(".btn-perm").click(function () {
+            var ps = '';
+
+            $("input[name='_selected_action']:checkbox:checked").each(function () {
+                ps = ps + $(this).val() + ",";
+            });
+
+            if (!confirm('确定操作选中的数据吗?')) return false;
+
+            var csrftoken = getCookie('csrftoken');
+
+            $.post("/sys/account/perm/del", {"ids": ps, "csrfmiddlewaretoken": csrftoken},
+                function (data) {
+                    window.location.href = '/sys/account/perm';
+                });
+        });
+
+
+    });
+
+</script>{%endif%}
+{% endblock %}
+

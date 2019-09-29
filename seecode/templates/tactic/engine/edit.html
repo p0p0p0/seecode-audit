@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <h1>配置管理
+      <small>{{ model }} {{ model.revision }}</small>
+    </h1>
+    <ol class="breadcrumb">
+      <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
+      <li>配置管理</li>
+      <li><a href="/gather/subdomain">引擎管理</a></li>
+      <li class="active">{{ model }}</li>
+    </ol>
+  </section>
+  <!-- Main content -->
+  <section class="content">
+    <div class="row">
+      <div class="col-xs-12">
+        <!-- /.box-header -->{%if perm.tactic.change_engineinfo%}
+        <form action="" method="POST">
+          {% csrf_token %}{% if model%}
+          <input type="hidden" value="{{ model.id }}" name="rule_id" id="policy_template_id"
+                 role="{{model.template.id}}"/>{%endif%}{%endif%}
+          <div class="nav-tabs-custom">
+            <ul class="nav nav-tabs">
+              <li class="active"><a href="#fa-icons" data-toggle="tab">基本信息</a></li>
+            </ul>
+            <div class="tab-content">
+              <!-- base -->
+              <div class="tab-pane active" id="fa-icons">
+                <div class="table-responsive">
+                  <table class="table" style="width: 99%">
+                    <tr>
+                      <th style="width:180px; padding-left: 35px; border-top: 0">名称：</th>
+                      <td align="left" style="border-top: 0">
+                        <input class="form-control" name="name" required value="{{ model.name }}" disabled/>
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">描述：</th>
+                      <td><textarea class="form-control" name="description"
+                           rows="2">{{ model.description|default:"" }}</textarea>
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">配置参数</th>
+                      <td>
+                        <div>
+                          <button class="btn btn-warning btn-default-add">添加引擎参数</button>
+                          <div id="config" style="padding: 10px 0">
+                            {%for k,v in paramters.items%}
+                            <div class="row form-group">
+                              <div class="col-md-5">
+                                <input class="form-control" name="key" required placeholder="Key" value="{{k}}"/></div>
+                              <div class="col-md-5"><input class="form-control" name="value" value="{{v}}" required
+                                                           placeholder="Value"/></div>
+                              <div class="col-md-2">{%if perm.tactic.delete_engineinfo%}
+                                <button class="btn-engine-parameter btn btn-danger">删除</button>{%endif%}
+                              </div>
+                            </div>
+                            {%endfor%}
+                          </div>
+                        </div>
+                      </td>
+                    </tr>{%if perm.tactic.change_engineinfo%}
+                    <tr>
+                      <th></th>
+                      <td>
+                        <button type="submit " class="btn bg-olive"> 修改</button>
+                      </td>
+                    </tr>{%endif%}
+                  </table>
+                </div>
+              </div>
+              <!-- /#fa-icons -->
+
+            </div>
+            <!-- /.tab-content -->
+          </div>
+          <!-- /.nav-tabs-custom -->
+        </form>
+        <!-- /.col -->
+      </div>
+    </div>
+    <!-- /.row -->
+  </section>
+  <!-- /.content -->
+</div>
+{% endblock %}
+
+{% block script %}
+
+<script>
+    $(function () {
+        $(".btn-default-add").click(function () {
+            $("#config").append('<div class="row form-group"><div class="col-md-5">' +
+                '<input class="form-control" name="key" required placeholder="Key" /> </div> ' +
+                '<div class="col-md-5"> <input class="form-control" name="value" required placeholder="Value" /></div> ' +
+                '<div class="col-md-2"><button class="btn-engine-parameter btn btn-danger">删除</button></div> </div>'
+            )
+        });
+        $(document).on('click', '.btn-engine-parameter', function () {
+            $(this).parent("div").parent("div").remove();
+        });
+
+    })
+
+</script>
+{% endblock %}

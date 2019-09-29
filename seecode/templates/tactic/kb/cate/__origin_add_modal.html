@@ -1,0 +1,57 @@
+<div class="modal fade" id="modal-default">
+  <div class="modal-dialog">
+    <div class="modal-content" style="width: 680px;">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"
+          aria-label="Close">
+          <span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">创建漏洞分类</h4>
+      </div>
+      <form class="form-horizontal" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-body">
+          <!-- Horizontal Form -->
+          <!-- form start -->
+          <div class="box-body">
+            <div class="form-group">
+              <label class="col-sm-3 control-label">名称(<font color="red">*</font>)：</label>
+              <div class="col-sm-9">
+                <input type="text" name="name" required class="form-control" placeholder="漏洞分类名称">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-3 control-label">分类(<font color="red">*</font>)：</label>
+              <div class="col-sm-9">
+                <select class="form-control" name="parent">
+                  <option value="0">一级分类</option>
+                  {%for item in parent_list%}<option value="{{item.id}}">{{item.name}}</option>
+                  {%endfor%}
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-3 control-label">KEY：</label>
+              <div class="col-sm-9">
+                <input type="text" name="key" class="form-control" placeholder="英文名称">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-3 control-label">TAG：</label>
+              <div class="col-sm-9">
+                <input type="text" name="tag" class="form-control" placeholder="标签，如：RCE, LEI, SQLI, XSS">
+              </div>
+            </div>
+
+          </div>
+          <!-- /.box-footer -->
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary" id="submit-rule">创建</button>
+        </div>
+      </form>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>

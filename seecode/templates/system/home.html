@@ -1,0 +1,308 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <h1>
+      Dashboard
+      <small>Version {{version}}</small>
+    </h1>
+    <ol class="breadcrumb">
+      <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
+      <li class="active">Dashboard</li>
+    </ol>
+  </section>
+
+  <!-- Main content -->
+  <section class="content">
+    <!-- Info boxes -->
+    <div class="row">
+      <div class="col-md-3 col-sm-6 col-xs-12">
+        <div class="info-box">
+          <span class="info-box-icon bg-aqua"><i class="ion ion-android-desktop"></i></span>
+          <div class="info-box-content">
+            <span class="info-box-text">项目组数</span>
+            <a href="/project/group/"><span class="info-box-number">{{dashboard.total.project_group_count}}</span></a>
+          </div>
+          <!-- /.info-box-content -->
+        </div>
+        <!-- /.info-box -->
+      </div>
+      <!-- /.col -->
+      <div class="col-md-3 col-sm-6 col-xs-12">
+        <div class="info-box">
+          <span class="info-box-icon bg-red"><i class="fa fa-frown-o"></i></span>
+          <div class="info-box-content">
+            <span class="info-box-text">项目总数</span>
+            <a href="/project/"><span class="info-box-number">{{dashboard.total.project_count}}</span></a>
+          </div>
+          <!-- /.info-box-content -->
+        </div>
+        <!-- /.info-box -->
+      </div>
+      <!-- /.col -->
+
+      <!-- fix for small devices only -->
+      <div class="clearfix visible-sm-block"></div>
+      <div class="col-md-3 col-sm-6 col-xs-12">
+        <div class="info-box">
+          <span class="info-box-icon bg-green"><i class="ion ion-ios-people-outline"></i></span>
+
+          <div class="info-box-content">
+            <span class="info-box-text">用户总数</span>
+            <a href="/project/member/"><span class="info-box-number">{{dashboard.total.user_count}}</span></a>
+          </div>
+          <!-- /.info-box-content -->
+        </div>
+        <!-- /.info-box -->
+      </div>
+      <!-- /.col -->
+      <div class="col-md-3 col-sm-6 col-xs-12">
+        <div class="info-box">
+          <span class="info-box-icon bg-yellow"><i class="ion ion-ios-albums"></i></span>
+          <div class="info-box-content">
+            <span class="info-box-text">应用总数</span>
+            <a href="/project/app/"><span class="info-box-number">{{dashboard.total.app_count}}</span></a>
+          </div>
+          <!-- /.info-box-content -->
+        </div>
+        <!-- /.info-box -->
+      </div>
+      <!-- /.col -->
+    </div>
+    <!-- /.row -->
+    <!-- Main row -->
+<div class="row">
+  <!-- Left col -->
+  <div class="col-md-8">
+    <!-- MAP & BOX PANE -->
+    <div class="box box-info">
+      <div class="box-header with-border">
+        <h3 class="box-title">最近扫描</h3>
+        <div class="box-tools pull-right">
+          <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+          </button>
+          <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+        </div>
+      </div>
+      <!-- /.box-header -->
+      <div class="box-body no-padding">
+        <div class="row">
+              <div style="height: 325px;">
+              <div id="container1" style="height: 325px;width: 100% "></div>
+              <script type="text/javascript"
+                      src="/static/js/echarts/echarts.min.js"></script>
+              <script type="text/javascript">
+                   var dom = document.getElementById("container1");
+                   var myChart = echarts.init(dom);
+                   var app = {};
+
+option = {
+    color: ['#3398DB'],
+    tooltip : {
+        trigger: 'axis',
+        axisPointer : {            // 坐标轴指示器，坐标轴触发有效
+            type : 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+        }
+    },
+    grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+    },
+    xAxis : [
+        {
+            type : 'category',
+            data : [{%for date,_ in dashboard.recent_scan.items%}'{{date}}',{%endfor%}],
+            axisTick: {alignWithLabel: true}
+        }
+    ],
+    yAxis: [{type : 'value'}
+    ],
+    series : [
+        {
+            name:'扫描总数',
+            type:'bar',
+            barWidth: '60%',
+            data:[{%for date,data in dashboard.recent_scan.items%}'{{data.total}}',{%endfor%}]
+        }
+    ]
+};
+                   if (option && typeof option === "object") {
+                       myChart.setOption(option, true);
+                   }
+
+              </script>
+            </div>
+          </div>
+        <!-- /.row -->
+      </div>
+      <!-- /.box-body -->
+    </div>
+  </div>
+  <!-- /.col -->
+  <div class="col-md-4">
+    <!--攻击类型 top4 count -->
+    <div class="box box-success">
+      <div class="box-header with-border">
+        <h3 class="box-title">本月漏洞类型分布</h3>
+        <div class="box-tools pull-right">
+          <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+          </button>
+          <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+        </div>
+      </div>
+      <!-- /.box-header -->
+      <div class="box-body ">
+        <div class="row">
+ <div id="container4" style="height: 305px;width: 100%;padding-left:10px;"></div>
+              <script type="text/javascript">
+                   var dom = document.getElementById("container4");
+                   var myChart = echarts.init(dom);
+                   var app = {};
+option = {
+    tooltip : {
+        trigger: 'item',
+        formatter: "{a} <br/>{b} : {c} ({d}%)"
+    },
+    legend: {
+        orient: 'vertical',
+        left: 'left',
+        data: [{%for name, _ in dashboard.tactic_type.items%}'{{name}}',{%endfor%}]
+    },
+    series : [
+        {
+            name: '风险类型占比',
+            type: 'pie',
+            radius : '55%',
+            center: ['50%', '60%'],
+            data:[{%for name, count in dashboard.tactic_type.items%}
+                {value:{{count}}, name:'{{name}}'},{%endfor%}
+            ],
+            itemStyle: {
+                emphasis: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                }
+            }
+        }
+    ]
+};
+                   if (option && typeof option === "object") {
+                       myChart.setOption(option, true);
+                   }
+              </script>
+          <!-- /.col -->
+        </div>
+        <!-- /.row -->
+      </div>
+      <!-- /.footer -->
+    </div>
+    <!-- /.box -->
+
+    <!-- /.box -->
+  </div>
+  <!-- /.col -->
+</div>
+
+
+    <div class="row">
+      <div class="col-md-12">
+        <div class="box">
+          <div class="box-header with-border">
+            <h3 class="box-title">项目趋势</h3>
+
+            <div class="box-tools pull-right">
+              <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+              <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+            </div>
+          </div>
+          <!-- /.box-header -->
+          <div class="box-body">
+            <div class="row">
+              <div style="height: 325px;">
+              <div id="container2" style="height: 325px;width: 100% "></div>
+              <script type="text/javascript">
+                   var dom = document.getElementById("container2");
+                   var myChart = echarts.init(dom);
+                   var app = {};
+                  option = {
+                      tooltip : {
+                          trigger: 'axis',
+                          axisPointer: {
+                              type: 'cross',
+                              label: {
+                                  backgroundColor: '#6a7985'
+                              }
+                          }
+                      },
+                      legend: {
+                          data:['新项目','活动项目']
+                      },
+                      grid: {
+                          left: '3%',
+                          right: '4%',
+                          bottom: '3%',
+                          containLabel: true
+                      },
+                      xAxis : [
+                          {
+                              type : 'category',
+                              boundaryGap : false,
+                              data : [{%for date,_ in dashboard.recent_project.items%}'{{date}}',{%endfor%}]
+                          }
+                      ],
+                      yAxis : [{type : 'value'}
+                      ],
+                      series : [
+                          {
+                              name:'新项目',
+                              type:'line',
+                              stack: '总量',
+                              areaStyle: {},
+                              data:[{%for date,data in dashboard.recent_project.items%}'{{data.new}}',{%endfor%}]
+                          },
+                          {
+                              name:'活动项目',
+                              type:'line',
+                              stack: '总量',
+                              areaStyle: {},
+                              data:[{%for date,data in dashboard.recent_project.items%}'{{data.activity}}',{%endfor%}]
+                          },
+
+                      ]
+                  };
+                   if (option && typeof option === "object") {
+                       myChart.setOption(option, true);
+                   }
+              </script>
+            </div>
+          </div>
+          <!-- /.row -->
+        </div>
+      </div>
+      <!-- /.box -->
+    </div>
+    <!-- /.col -->
+</div>
+<!-- /.row -->
+
+</section>
+<!-- /.content -->
+</div>
+
+{% endblock %}
+
+{% block script %}
+<script>
+    $(function () {
+      $(".time-node").each(function () {
+          $(this).text(getDateDiff(getDateTimeStamp($(this).text())))
+                //$(this).html(getDateDiff($(this).val()))
+      });
+    });
+</script>
+{% endblock %}

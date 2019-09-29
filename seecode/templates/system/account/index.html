@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <h1>系统管理
+      <small></small>
+    </h1>
+    <ol class="breadcrumb">
+      <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
+      <li><a href="/asset/list">系统管理</a></li>
+      <li class="active">账号管理</li>
+    </ol>
+  </section>
+  <!-- Main content -->
+  <section class="content">
+    <div class="box">
+      <div class="box-header with-border">{%if perm.auth.add_user%}
+         <span style="float: right;font-size: 12px;"><a href="#" data-toggle="modal" data-target="#modal-default"> 添加</a></span>{%endif%}
+        <h6 class="box-title">账号列表</h6>
+        <!-- /.box-tools -->
+      </div>
+      <!-- /.box-header -->
+      <div class="box-body">
+        <div class="row">
+          <div class="col-md-10">
+            <form class="form-inline" role="form">
+              <div class="form-group margin-r-5">
+                <select class="form-control" name="g">
+                  <option value="" selected="selected">--所有组--</option>{%for item in groups%}
+                  <option value="{{item.id}}" {% ifequal group item.id|stringformat:"i" %}selected{% endifequal%}>{{item}}</option>{%endfor%}
+                </select>
+              </div>
+              <div class="form-group margin-r-5">
+                <select class="form-control" name="s">
+                  <option value="" selected="selected">所有状态</option>
+                  <option value="1" {% ifequal '1' status %}selected{% endifequal %}>启用</option>
+                  <option value="0"  {% ifequal '0' status %}selected{% endifequal %}>禁用</option>
+                </select>
+              </div>
+              <div class="form-group margin-r-5">
+                <input class="form-control" value="{{user_name}}" placeholder="用户名" name="u">
+              </div>
+              <button type="submit" class="btn bg-navy">开始</button>
+            </form>
+          </div>
+          <div class="col-md-2">
+            <div class="content-toolbar btn-toolbar pull-right clearfix">
+              <div class="btn-group">
+                <a class="dropdown-toggle btn btn-default btn-sm" data-toggle="dropdown"
+                   href="#"> <i class="fa fa-list-alt"></i> 其他操作 <span class="caret"></span> </a>
+                <ul class="dropdown-menu model_fields pull-right" role="menu">{%if perm.auth.view_group%}
+                  <li><a href="/sys/group/">分组管理</a></li>{%endif%}
+                  <li class="divider"></li>{%if perm.auth.view_permission%}
+                  <li><a href="/sys/account/perm/">权限管理</a></li>{%endif%}
+                  <li class="divider"></li>{%if perm.auth.add_user%}
+                  <li><a href="#" data-toggle="modal" data-target="#modal-default">创建账号</a></li>{%endif%}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- /.box-body -->
+      </div>
+    </div>
+      <div class="row">
+        <div class="col-xs-12">
+          <div class="box">
+            <!-- /.box-header -->
+            <div class="box-body">
+              <table id="example2" class="table table-hover">
+                <thead>
+                <tr>
+                  <th><input type="checkbox" id="action-toggle"/></th>
+                  <th>账户名称</th>
+                  <th>邮箱</th>
+                  <th>所属组</th>
+                  <th>状态</th>
+                  <th>注册时间</th>
+                </tr>
+                </thead>
+                <tbody>{% for item in page.object_list %}
+                <tr>
+                  <td><input type="checkbox" value="{{ item.id }}" class="action-select" name="_selected_action"/></td>
+                  <td><a href="/sys/account/{{ item.id }}/" title="{{ item.name }}" style="font-size: 14px">{{item.username }}</a>
+                    {% ifequal request.user.id item.id%} <span class="label label-default">我</span>{%endifequal%}
+                  </td>
+                  <td>{{ item.email|default:"-" }}</td>
+                  <td>{%for group in item.groups.all %}<span class="label label-primary">{{group}}</span>{% empty %} - {% endfor %}</td>
+                  <td>{% if item.is_active %}<span class="label label-success">启用</span>{%else%}<span class="label label-warning">禁用</span>{%endif%}</td>
+                  <td>{{ item.date_joined|date:"Y-m-d H:i:s" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="10" align="center"><span style="color:#ff0000">没找到相关数据!</span></td></tr>
+                {% endfor %}
+                </tbody>
+              </table>
+
+              <div style="text-align: right; border-top: 1px solid #eee">
+                <div class="row">
+                  <div class="col-sm-2">{%if perm.auth.change_user%}
+                    <div class="btn-group pagination" style="float: left">
+                      <button type="button" class="btn btn-info">Action</button>
+                      <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
+                        <span class="caret"></span>
+                        <span class="sr-only">Toggle Dropdown</span>
+                      </button>
+                      <ul class="dropdown-menu" role="menu">
+                        <li><a href="#">禁用选中用户</a></li>
+                        <li><a href="#">删除选中用户</a></li>
+                      </ul>
+                    </div>{%endif%}
+                  </div>
+                  <div class="col-sm-10" style="text-align: right">{{ page.render }}</div>
+                </div>
+              </div>
+              <!-- /.box-body -->
+            </div>
+            <!-- /.box -->{%if perm.auth.add_user%}
+            {% include "./inc/__account_add_modal.html" %}{%endif%}
+            <!-- /.box -->
+          </div>
+          <!-- /.col -->
+        </div>
+      </div>
+      <!-- /.row -->
+  </section>
+  <!-- /.content -->
+</div>
+{% endblock %}
+

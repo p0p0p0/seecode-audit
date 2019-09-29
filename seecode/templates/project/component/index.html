@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <h1>项目管理
+      <small>{% if archive%}已归档组件{%endif%}</small>
+    </h1>
+    <ol class="breadcrumb">
+      <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
+      <li>项目管理</li>
+      <li class="active">项目组件</li>
+    </ol>
+  </section>
+  <!-- Main content -->
+  <section class="content">
+    <div class="box">
+      <div class="box-header with-border">
+        <h6 class="box-title"> 组件列表</h6>
+        <!-- /.box-tools -->
+      </div>
+      <!-- /.box-header -->
+      <div class="box-body">
+        <div class="row">
+          <div class="col-md-10">
+            <form class="form-inline" role="form">
+              <input type="hidden" name="archive" value="{{archive}}">
+              <div class="form-group margin-r-5">
+                <select name="pro" class="form-control select2" id="project" style="min-width: 220px;">{%if project_obj%}
+                  <option value="{{project_obj.id}}">{{project_obj}}</option>{%endif%}</select>
+              </div>
+              <div class="form-group margin-r-5">
+                <select name="a" class="form-control select2" id="app" style="min-width: 220px;">{%if app_obj%}
+                  <option value="{{app_obj.id}}">{{app_obj}}</option>{%endif%}</select>
+              </div>
+              <div class="form-group margin-r-5">
+                <input class="form-control" value="{{keyword}}" placeholder="组件关键字或 Dorks 语法" name="k" style="width: 256px">
+              </div>
+              <button type="submit" class="btn bg-navy">查询</button>
+            </form>
+          </div>
+          <div class="col-md-2">
+            <div class="content-toolbar btn-toolbar pull-right clearfix">
+              <div class="btn-group">
+                <a class="dropdown-toggle btn btn-default btn-sm" data-toggle="dropdown" href="#">
+                  <i class="fa fa-list-alt"></i> {% if archive%}已归档组件{%else%}其他操作{%endif%} <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu model_fields pull-right" role="menu">
+                  <li><a href="/project/component/export/?archive={{archive}}&pro={{project_obj.id}}&a={{app_obj.id}}&k={{keyword}}">导出组件</a></li>
+                  <li class="divider"></li>
+                  <li><a href="/project/component/?archive=1">归档组件</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- /.box-body -->
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-12">
+        <div class="box">
+          <!-- /.box-header -->
+          <div class="box-body">
+            <table id="example2" class="table table-hover">
+              <thead>
+              <tr>
+                <th width="5%"><input type="checkbox" id="action-toggle"/></th>
+                <th>组件名称</th>
+                <th>版本</th>
+                <th>groupId</th>
+                <th>所属应用</th>
+                <th>位置文件</th>
+                <th>发现时间</th>
+              </tr>
+              </thead>
+              <tbody style="font-size: 1.5rem">{% for item in page.object_list %}
+              <tr>
+                <td><input type="checkbox" value="{{ item.id }}" class="action-select" name="_selected_action"/></td>
+                <td><span class="label label-primary">{{item.name }}</span></td>
+                <td>{{item.version|default:"-" }}</td>
+                <td>{%if item.group_id%}<span class="label label-default">{{item.group_id|default:"-" }}</span>{%else%}-{%endif%}</td>
+                <td><a href="/project/app/{{item.app.id}}/">{{item.app}}</a></td>
+                <td title="{{ item.file_name}}">{{ item.file_name|slice:"-40:"}}</td>
+                <td>{{ item.created_at|date:"Y-m-d H:i:s" }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="10" align="center"><span style="color:#ff0000">没找到相关数据!</span></td></tr>
+              {% endfor %}
+              </tbody>
+            </table>
+            <div style="text-align: right; border-top: 1px solid #eee">
+              <div class="row">
+                <div class="col-sm-2"></div>
+                <div class="col-sm-10" style="text-align: right">{{ page.render }}</div>
+              </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+        </div>
+        <!-- /.col -->
+      </div>
+    </div>
+    <!-- /.row -->
+  </section>
+  <!-- /.content -->
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="/static/plugins/toastr/toastr.min.js"></script>
+<link href="/static/plugins/toastr/toastr.min.css" rel="stylesheet" type="text/css"/>
+<link rel="stylesheet" href="/static/bower_components/select2/css/select2.min.css">
+<link rel="stylesheet" href="/static/css/AdminLTE.min.css">
+<script src="/static/bower_components/select2/js/select2.full.min.js"></script>
+<script>
+    $(function () {
+        $('.select2').select2();
+        toastr.options = {
+            closeButton: false,
+            debug: false,
+            progressBar: true,
+            onclick: null,
+            showDuration: "300",
+            hideDuration: "1000",
+            timeOut: "5000",
+            extendedTimeOut: "1000",
+            showEasing: "swing",
+            hideEasing: "linear",
+            showMethod: "fadeIn",
+            hideMethod: "fadeOut"
+        };
+        {%if request.GET.errmsg %}
+        toastr.error("{{ request.GET.errmsg }}");
+        {%endif %}
+        {%if request.GET.msg %}
+        toastr.success("{{ request.GET.msg }}");
+        {%endif %}
+
+        $('#group').select2({
+            placeholder: '请选择项目分组',
+            ajax: {
+                delay: 250,
+                url: '/project/group/search/',
+                type: "post",
+                data: function (params) {
+                    var query = {
+                        q: params.term,
+                        csrfmiddlewaretoken: getCookie('csrftoken'),
+                        role: 'group'
+                    };
+                    return query;
+                }, processResults: function (data, params) {
+                    $("#project").select2("val", "");
+                    return {results: data};
+                }
+            }
+        });
+
+        $('#project').select2({
+            placeholder: '请选择项目',
+            ajax: {
+                delay: 250,
+                url: '/project/group/search/',
+                type: "post",
+                data: function (params) {
+                    var query = {
+                        q: params.term,
+                        csrfmiddlewaretoken: getCookie('csrftoken'),
+                        role: 'project',
+                        group_id: $("#group").val()
+                    };
+                    return query;
+                }, processResults: function (data, params) {
+                    $("#app").select2("val", "");
+                    return {results: data};
+                }
+            }
+        });
+
+        $('#app').select2({
+            placeholder: '请选择应用',
+            ajax: {
+                delay: 250,
+                url: '/project/app/search/',
+                type: "post",
+                data: function (params) {
+                    var query = {
+                        q: params.term,
+                        csrfmiddlewaretoken: getCookie('csrftoken'),
+                        role: 'app',
+                        project_id: $("#project").val()
+                    };
+                    return query;
+                }, processResults: function (data, params) {
+                    $("#app").select2("val", "");
+                    return {results: data};
+                }
+            }
+        });
+    });
+
+
+</script>
+{% endblock %}

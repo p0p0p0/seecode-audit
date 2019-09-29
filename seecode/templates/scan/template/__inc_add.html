@@ -1,0 +1,92 @@
+{% load get_perms %}
+<div class="modal fade" id="modal-default">
+  <div class="modal-dialog">
+    <div class="modal-content" style="width: 680px;">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">创建扫描模板</h4>
+      </div>
+      <form class="form-horizontal" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input name="issue_statistic_type" value="1,2,3" type="hidden" />
+        <div class="modal-body">
+          <!-- Horizontal Form -->
+          <!-- form start -->
+          <div class="box-body">
+            <div class="form-group">
+              <label class="col-sm-2 control-label">名称(*)：</label>
+              <div class="col-sm-10">
+                <input type="text" name="name" required class="form-control" placeholder="default"
+                onkeyup="this.value=this.value.replace(/[^\w_]/g,'');">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label">描述：</label>
+              <div class="col-sm-10">
+                <textarea class="form-control" name="description" rows="2"></textarea>
+              </div>
+            </div>
+            <div class="form-group" style="font-size: 14px; padding-top: 20px">
+              <div class="nav-tabs-custom" style="margin-bottom: 0px">
+                <ul class="nav nav-tabs">
+                  <li class="active"><a href="#sys" data-toggle="tab">基本设置</a></li>
+                  <li><a href="#engine" data-toggle="tab">引擎设置</a></li>
+                </ul>
+                <div class="tab-content">
+                  <!-- base -->
+                  <div class="tab-pane active" id="sys">
+                    <div class="table-responsive">
+                      <table class="table" width="99%">
+                        <tr>
+                          <th style="width:100px; border-top:0px; text-align: right">exclude_dir：</th>
+                          <td align="left" style="border-top:0px; border-bottom: 1px;"><textarea class="form-control" name="exclude_dir" rows="2">.git/,bin/,node_modules/</textarea></td>
+                        </tr>
+                        <tr>
+                          <th style=" text-align: right">exclude_ext：</th>
+                          <td><textarea class="form-control" name="exclude_ext" rows="6">.jpg,.jpeg,.png,.bmp,.gif,.ico,.cur,.eot,.otf,.svg,.ttf,.woff,.html,.htm,.css,.less,.scss,.styl,.min.js,.po,.mp3,.mp4,.swf,.exe,.sh,.dll,.so,.bat,.jar,.swp,.crt,.txt,.pdf,.doc,.docx,.csv,.md,.properties,.zip,.bak,.tar,.rar,.tar.gz,.rar,.7z,.iso,.db,.spf,.iml,.manifest,.psd,.as,.log,.template,.tpl</textarea></td>
+                        </tr>
+                        <tr>
+                          <th style="text-align: right">exclude_file：</th>
+                          <td ><textarea class="form-control" name="exclude_file" rows="2"></textarea></td>
+                        </tr>
+                      </table>
+                    </div>
+                  </div>
+                  <!-- /#sys -->
+                  <div class="tab-pane" id="engine">
+                    <div class="table-responsive">
+                      <table class="table" width="99%">
+                        {% for item in engines%}
+                        <tr><td colspan="2" style="border-top:0px;"><h4 style="border-left:2px solid burlywood; padding-left: 10px; background: #f1f1f1; height: 40px; line-height: 40px;">{{item.name}}</h4></td></tr>
+                        <tr>
+                          <td colspan="2">
+                            <ul style="list-style: none;padding-left:10px;margin:0">
+                              <li><input type="checkbox" value="{{ item.id }}" name="engine" checked> 启用引擎 </li>
+                              {% if item.module_name == 'seecode_scanner.lib.engines.rulescanner' %}<li><input type="checkbox" name="rule_all" checked>添加所有规则</li>
+                              {%elif item.module_name == 'seecode_scanner.lib.engines.pluginscanner' %}<li><input type="checkbox" name="plugin_all" checked> 添加所有插件 </li>
+                              {%elif item.module_name == 'seecode_scanner.lib.engines.sonarscanner' %}<li style="color:#D0D0D0"><input type="checkbox" disabled name="sonar_all" checked> 添加所有插件 </li>
+                              {%endif%}
+                            </ul>
+                          </td>
+                        </tr>{%endfor%}
+                      </table>
+                    </div>
+                  </div>
+                  <!-- /#task -->
+                </div>
+                <!-- /.tab-content -->
+              </div>
+            </div>
+            <!-- /.box-footer -->
+          </div>
+          <div class="modal-footer" style="border: 0px">
+            <button type="submit" class="btn btn-primary" id="submit-rule" style="width: 80px">创建</button>
+          </div>
+        </div>
+      </form>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>

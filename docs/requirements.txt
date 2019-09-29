@@ -1,0 +1,6 @@
+doc8>=0.8.0
+readme-renderer>=17.4
+releases>=1.4.0
+Sphinx
+sphinx_rtd_theme>=0.2.4
+semantic-version<2.7

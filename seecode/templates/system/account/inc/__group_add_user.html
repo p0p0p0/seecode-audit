@@ -1,0 +1,37 @@
+{% load get_perms %}
+<div class="modal fade" id="modal-default">
+    <div class="modal-dialog">
+        <div class="modal-content" style="width: 680px;">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">添加账号</h4>
+            </div>
+            <form class="form-horizontal" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="group_id" value="{{group.id}}">
+                <div class="modal-body">
+                    <!-- Horizontal Form -->
+                    <!-- form start -->
+                    <div class="box-body">
+                        <div class="form-group">
+                            <label for="perm-name" class="col-sm-2 control-label">账号(*)：</label>
+                            <div class="col-sm-9">
+                                <input type="text" id="name" name="name" required class="form-control"
+                                       id="perm-name">
+                            </div>
+                        </div>
+                        <!-- /.box-footer -->
+                    </div>
+
+                    <div class="modal-footer" style="border: 0px">
+                        <button type="submit" class="btn btn-primary" id="submit-rule" style="width: 80px">添加</button>
+
+                    </div>
+                </div>
+            </form>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>

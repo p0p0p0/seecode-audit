@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <h1>任务管理<small></small></h1>
+    <ol class="breadcrumb">
+      <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
+      <li>任务管理</li>
+      <li class="active">扫描分组</li>
+    </ol>
+  </section>
+  <!-- Main content -->
+  <section class="content">
+    <div class="box">
+      <div class="box-header with-border">
+        <h6 class="box-title"> 分组列表</h6>
+        <!-- /.box-tools -->
+      </div>
+      <!-- /.box-header -->
+      <div class="box-body">
+        <div class="row">
+          <div class="col-md-10">
+            <form class="form-inline" role="form">
+              <div class="form-group margin-r-5">
+                <input class="form-control" value="{{keyword}}" placeholder="任务分组关键字" name="k" style="width: 256px">
+              </div>
+              <button type="submit" class="btn bg-navy">查询</button>
+            </form>
+          </div>
+          <div class="col-md-2">
+            <div class="content-toolbar btn-toolbar pull-right clearfix">
+            <div class="btn-group">
+              <a class="dropdown-toggle btn btn-default btn-sm" data-toggle="dropdown"
+                 href="#"> <i class="fa fa-list-alt"></i> 其他操作 <span class="caret"></span> </a>
+              <ul class="dropdown-menu model_fields pull-right" role="menu">{%if perm.scan.add_taskgroupinfo%}
+                <li><a href="#" data-toggle="modal" data-target="#modal-group"> 创建分组</a></li>{%endif%}
+              </ul>
+            </div>
+            </div>
+          </div>
+        </div>
+        <!-- /.box-body -->
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-12">
+        <div class="box">
+          <!-- /.box-header -->
+          <div class="box-body">
+            <table id="example2" class="table table-hover">
+              <thead>
+              <tr>
+                <th width="5%"><input type="checkbox" id="action-toggle"/></th>
+                <th width="20%">标题</th>
+                <th>扫描模板</th>
+                <th>扫描方式</th>
+                <th>是否默认</th>
+                <th>创建时间</th>
+                <th>操作</th>
+              </tr>
+              </thead>
+              <tbody style="font-size: 1.5rem">{% for item in page.object_list %}
+              <tr>
+                <td><input type="checkbox" value="{{ item.id }}" class="action-select" name="_selected_action"/></td>
+                <td><a href="/scan/group/{{ item.id }}/" title="{{ item.name }}">{{item.name }}</a></td>
+                <td><span class="label label-default">{{item.profile}}</span></td>
+                <td><span class="label label-info">{{item.sched|default:"扫描一次"}}</span></td>
+                <td>{% if item.is_default%}<span class="label label-success">是</span>{%else%}
+                  <span class="label label-danger">否</span>{%endif%}</td>
+                <td>{{ item.created_at|date:"Y-m-d H:i:s" }}</td>
+                <td><a href="#" class="btn-set-default" data-id="{{ item.id }}">设置为默认</a></td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="10" align="center"><span style="color:#ff0000">没找到相关数据!</span></td></tr>
+              {% endfor %}
+              </tbody>
+            </table>
+
+            <div style="text-align: right; border-top: 1px solid #eee">
+              <div class="row">
+                <div class="col-sm-2">{%if perm.scan.delete_taskgroupinfo%}
+                  <div class="btn-group pagination" style="float: left">
+                    <button type="button" class="btn btn-info">Action</button>
+                    <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
+                      <span class="caret"></span>
+                      <span class="sr-only">Toggle Dropdown</span>
+                    </button>
+                    <ul class="dropdown-menu" role="menu">
+                      <li><a href="#" class="btn-ops" role="del">删除所选分组</a></li>
+                    </ul>
+                  </div>{%endif%}
+                </div>
+                <div class="col-sm-10" style="text-align: right">{{ page.render }}</div>
+              </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+          {% include "./__add_group_modal.html" %}
+          <!-- /.box -->
+        </div>
+        <!-- /.col -->
+      </div>
+    </div>
+    <!-- /.row -->
+  </section>
+  <!-- /.content -->
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="/static/plugins/toastr/toastr.min.js"></script>
+<link href="/static/plugins/toastr/toastr.min.css" rel="stylesheet" type="text/css"/>
+
+<script>
+    $(function () {
+        toastr.options = {
+                closeButton: false,
+                debug: false,
+                progressBar: true,
+                onclick: null,
+                showDuration: "300",
+                hideDuration: "1000",
+                timeOut: "5000",
+                extendedTimeOut: "1000",
+                showEasing: "swing",
+                hideEasing: "linear",
+                showMethod: "fadeIn",
+                hideMethod: "fadeOut"
+            };
+        {% if request.GET.errmsg%}
+            toastr.error("{{ request.GET.errmsg }}");
+        {% endif %}
+        {% if request.GET.msg%}
+            toastr.success("{{ request.GET.msg }}");
+        {% endif %}
+{%if perm.scan.delete_taskgroupinfo%}
+        $(".btn-ops").click(function () {
+            var ps = '';
+            var role = $(this).attr('role');
+
+            $("input[name='_selected_action']:checkbox:checked").each(function () {
+                ps = ps + $(this).val() + ",";
+            });
+
+            if (!confirm('确定操作选中的数据吗?')) return false;
+            var csrftoken = getCookie('csrftoken');
+            $.post("/scan/group/batch/",
+                {"ids": ps, "csrfmiddlewaretoken": csrftoken, 'action': role},
+                function (data) {window.location.href = '/scan/group/';
+            });
+        });
+        {%endif%}
+        {%if perm.scan.change_taskgroupinfo%}
+         $(".btn-set-default").click(function () {
+            var ps = '';
+            if (!confirm('确定设置为默认?')) return false;
+            var csrftoken = getCookie('csrftoken');
+            $.post("/scan/group/batch/",
+                {"gid": $(this).attr('data-id'), "csrfmiddlewaretoken": csrftoken, 'action': 'set-default'},
+                function (data) {window.location.href = '/scan/group/';
+            });
+        });{%endif%}
+    });
+</script>
+{% endblock %}

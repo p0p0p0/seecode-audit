@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load get_services %}
+{% block body %}
+<div class="content-wrapper" xmlns:H="http://www.w3.org/1999/xhtml">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <h1>节点管理<small></small></h1>
+    <ol class="breadcrumb">
+      <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
+      <li>节点管理</li>
+      <li class="active">集群列表</li>
+    </ol>
+  </section>
+  <!-- Main content -->
+  <section class="content">
+    <div class="box">
+      <div class="box-header with-border">
+        <h6 class="box-title">节点列表</h6>
+        <!-- /.box-tools -->
+      </div>
+      <!-- /.box-header -->
+      <div class="box-body">
+        <div class="row">
+          <div class="col-md-10">
+            <form class="form-inline" role="form">
+              <div class="form-group margin-r-5">
+                <select class="form-control" name="r">
+                  <option value="">所有角色</option>
+                  {%for item in node_role%}
+                  <option value="{{item.0}}" {%if item.0 == r%}selected{%endif%}>{{item.1}}</option>{%endfor%}
+                </select>
+              </div>
+              <div class="form-group margin-r-5">
+                <input class="form-control" value="{{keyword}}"
+                  placeholder="关键字" name="k" style="width: 256px">
+              </div>
+              <button type="submit" class="btn bg-navy">查询</button>
+            </form>
+          </div>
+          <div class="col-md-2">
+            <div class="content-toolbar btn-toolbar pull-right clearfix">
+              <div class="btn-group">
+                <a class="dropdown-toggle btn btn-default btn-sm"
+                  data-toggle="dropdown" href="#">
+                  <i class="fa fa-list-alt"></i> 其他操作 <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu model_fields pull-right" role="menu">
+                  <li><a href="/node/service/">服务管理</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- /.box-body -->
+      </div>
+    </div>
+    <div class="row">
+      {% for item in page.object_list %}
+      <div class="col-md-4">
+        <!-- Widget: user widget style 1 -->
+        <div class="box box-widget widget-user-2">
+          <!-- Add the bg color to the header using any of the bg-* classes -->
+          <div class="widget-user-header bg-aqua-active">
+            <div class="widget-user-image">
+              <img class="img-circle" src="/static/img/server.png">
+            </div>
+            <!-- /.widget-user-image -->
+            <h4 class="widget-user-username">{{item.hostname}}</h4>
+            <h5 class="widget-user-desc">{{item.ipv4}}</h5>
+            <h5 class="widget-user-desc">
+              {% if item.is_role_ui %}
+                <span class="label" style="font-size: 12px; background: purple"
+                title="角色：UI 时间：{{item.updated_at|date:"Y-m-d H:i:s"}}">UI: v{{item.ui_version}}</span>{%endif%}
+              {% if item.is_role_client %}
+              <span class="label" style="font-size: 12px; background: purple"
+                title="角色：Client 时间：{{item.updated_at|date:"Y-m-d H:i:s"}}">Client：v{{item.client_version}}</span>{%endif%}
+            </h5>
+          </div>
+          <div class="box-footer no-padding">
+            <ul class="nav nav-stacked">
+              {% for service in item.id|get_services%}
+              <li>
+                <div class="row"style="padding: 10px 5px 10px 10px;">
+                  <div class="col-sm-4">{{service.service.name}}</div>
+                  <div class="col-sm-2">
+                    {% if service.status == 1 %}
+                    <span class="label label-success">{{service.get_status_display}}</span>
+                    {%elif service.status == 2%}
+                    <span class="label label-danger">{{service.get_status_display}}</span>
+                    {%else%}
+                    <span class="label label-default">{{service.get_status_display}}</span>
+                    {%endif%}
+                  </div>
+                  <div class="col-sm-6"style="text-align: right">{{service.updated_at|date:"Y-m-d H:i:s"}}</div>
+                </div>
+              </li>
+              {%empty%}
+              <li><div class="row"style="padding: 10px 5px 10px 10px; text-align:center"><span style="color:#ff0000">没找到相关服务!</span></div></li>
+              {%endfor%}
+            </ul>
+          </div>
+        </div>
+        <!-- /.col -->
+      </div>
+      {%endfor%}
+    </div>
+    <!-- /.row -->
+  </section>
+  <!-- /.content -->
+</div>
+{% endblock %}
+
+{% block script %}
+
+{% endblock %}

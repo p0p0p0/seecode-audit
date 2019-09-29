@@ -1,0 +1,40 @@
+<div class="modal fade" id="modal-default">
+  <div class="modal-dialog">
+    <div class="modal-content" style="width: 680px;">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">编辑状态</h4>
+      </div>
+      <form class="form-horizontal" method="POST">
+        {% csrf_token %}<input type="hidden" name="role" value="status">
+        <div class="modal-body">
+          <!-- form start -->
+          <div class="modal-body">
+            <div class="form-group">
+              <label class="col-sm-3 control-label">状态(*)：</label>
+              <div class="col-sm-9">
+                <select class="form-control" name="status" required style="width: 160px;">
+                  <option value="">请选择修复状态</option>
+                  <option value="2">已忽略</option>
+                  <option value="3">已修复</option>
+                  <option value="4">已确认</option>
+                  <option value="5">不修复</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-3 control-label">说明(*)：</label>
+              <div class="col-sm-9"><textarea name="comment" required class="form-control"></textarea></div>
+            </div>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>

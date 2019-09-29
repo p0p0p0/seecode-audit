@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <h1>任务管理
+      <small></small>
+    </h1>
+    <ol class="breadcrumb">
+      <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
+      <li>任务管理</li>
+      <li class="active">扫描任务</li>
+    </ol>
+  </section>
+  <!-- Main content -->
+  <section class="content">
+    <div class="box">
+      <div class="box-header with-border">
+        <h6 class="box-title"> 任务列表</h6>
+        <!-- /.box-tools -->
+      </div>
+      <!-- /.box-header -->
+      <div class="box-body">
+        <div class="row">
+          <div class="col-md-10">
+            <form class="form-inline" role="form">
+              <div class="form-group margin-r-5">
+                <select class="form-control select2 task_group" style="width: 180px;" name="g">{% if group%}
+                  <option value="{{group.id}}" selected>{{group}}</option>{%endif%}
+                </select>
+              </div>
+              <div class="form-group margin-r-5">
+                <select class="form-control select2 app" style="min-width: 280px;" name="a">{% if app%}
+                  <option value="{{app.id}}" selected>{{app.module_name}}</option>{%endif%}
+                </select>
+              </div>
+              <div class="form-group margin-r-5">
+                <select class="form-control" name="s">
+                  <option value="">状态</option>{%for item in scan_status%}
+                  <option value="{{item.0}}" {%if item.0|slugify == s %}selected{%endif%}>{{item.1}}</option>{%endfor%}
+                </select>
+              </div>
+              <div class="form-group margin-r-5">
+                <input type="text" class="form-control" value="{{form_dt}}" name="dt" placeholder="请选择时间范围"
+                       id="dt" style="width: 190px;">
+              </div>
+
+              <button type="submit" class="btn bg-navy">查询</button>
+            </form>
+          </div>
+          <div class="col-md-2">
+            {% if perm.scan.view_taskgroupinfo or perm.scan.add_taskinfo%}
+            <div class="content-toolbar btn-toolbar pull-right clearfix">
+              <div class="btn-group">
+                <a class="dropdown-toggle btn btn-default btn-sm" data-toggle="dropdown"
+                   href="#"> <i class="fa fa-list-alt"></i> 其他操作 <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu model_fields pull-right" role="menu">{% if perm.scan.view_taskgroupinfo%}
+                  <li><a href="/scan/group/">扫描分组</a></li>{%endif%}
+                  <li class="divider"></li>{% if perm.scan.add_taskinfo%}
+                  <li><a href="#" data-toggle="modal" data-target="#modal-task">创建扫描</a></li>{%endif%}
+                </ul>
+              </div>
+            </div>
+            {%endif%}
+          </div>
+        </div>
+        <!-- /.box-body -->
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-12">
+        <div class="box">
+          <!-- /.box-header -->
+          <div class="box-body">
+            <table id="example2" class="table table-hover">
+              <thead>
+              <tr>
+                <th><input type="checkbox" id="action-toggle"/></th>
+                <th>ID</th>
+                <th>时间</th>
+                <th>应用名称</th>
+                <th>扫描节点</th>
+                <th>commit hash</th>
+                <th>扫描模板</th>
+                <th>状态</th>
+                <th>漏洞</th>
+                <th>创建时间</th>
+              </tr>
+              </thead>
+              <tbody style="font-size: 1.5rem">{% for item in page.object_list %}
+              <tr>
+                <td><input type="checkbox" value="{{ item.id }}" class="action-select" name="_selected_action"/></td>
+                <td>{{item.id}}</td>
+                <td><span><i class="fa fa-fw fa-play-circle-o" title="开始时间：{{item.start_time|date:" Y-m-d H:i:s"|default:"-"}}"></i>
+                  {{item.start_time|date:"Y-m-d H:i:s"|default:"-"}}<br>
+                   <i class="fa fa-fw fa-times-circle" title="结束时间：{{item.end_time|date:" Y-m-d H:i:s"|default:"-"}}"></i>
+                  {{item.end_time|date:"Y-m-d H:i:s"|default:"-"}}</span></td>
+                <td><a href="/scan/task/{{ item.id }}/" title="{{ item.app.module_name }}">
+                    {{item.app.app_name }}</a> {%if item.is_force_scan%}<i class="fa fa-fw fa-refresh" title="开启强制代码同步"></i>{%endif%}
+                  {%if item.scan_way == 1%}<i class="fa fa-fw fa-hand-o-up" title="触发方式：{{item.get_scan_way_display}}"></i>
+                  {%else%}<i class="fa fa-fw fa-gears" title="触发方式：{{item.get_scan_way_display}} {{item.version|default:""}} "></i>{%endif%}</td>
+                <td><span class="label label-info">{{item.executor_ip|default:"-"}}</span></td>
+                <td><span class="label label-default">{{item.hash|slice:8|default:"-"}}</span></td>
+                <td>{%if item.template_name%}<span class="label label-primary">
+                    {{item.template_name|default:"-"}}{%if item.template_version%} - v{{item.template_version|default:"-"}}{%else%}-{%endif%}</span>
+                  {%else%}-{%endif%}</td>
+                <td>{% if item.status == １%}<a href="/scan/log/{{item.id}}/"><span class="label label-danger ">{{item.get_status_display}} </span></a>
+                  <a href="/sys/log/?k={{item.error_title}}"><i class="fa fa-fw fa-exclamation-circle tooltip_func"  title="{{item.error_reason|default:""}}" style="color:#000"></i></a>
+                  {%elif item.status == 2%}<span class="label label-warning tooltip_func" title="{{item.error_title|default:""}}">{{item.get_status_display}}</span>
+                  {%elif item.status|slugify in '3,4'%}<span class="label label-primary" >{{item.get_status_display}}</span>
+                  {%elif item.status == 5%}<span class="label label-info tooltip_func" title="{{item.error_title|default:" -"}}">{{item.get_status_display}}</span>
+                  {%else%}<span class="label label-success tooltip_func" title="{{item.error_title|default:" -"}}">{{item.get_status_display}}</span>
+                  {%endif%}</td>
+                <td> <span class="badge" style="background: #F96C60">{% if item.critical%}
+                  <a href="/scan/issue/?r=1&app={{item.app.id}}&c=3" style="color:#fff" title="严重: {{ item.critical}}">{{ item.critical}}</a>{%else%}{{ item.critical}}{%endif%}
+                  </span> <span class="badge" style="background: #FBB321">{% if item.high%}
+                  <a href="/scan/issue/?r=2&app={{item.app.id}}&c=3" style="color:#fff" title="高危: {{ item.high}}">{{ item.high}}</a>{%else%}{{ item.high}}{%endif%}
+                  </span> <span class="badge" style="background: #41CAC0">{% if item.medium%}
+                  <a href="/scan/issue/?r=3&app={{item.app.id}}&c=3" style="color:#fff" title="中危:{{ item.medium}}">{{ item.medium}}</a>{%else%}{{ item.medium}}{%endif%}
+                  </span> <span class="badge " style="background: #3C8DBC">{% if item.low%}
+                  <a href="/scan/issue/?r=4&app={{item.app.id}}&c=3" style="color:#fff" title="低危:{{ item.low}}">{{ item.low}}</a>{%else%}{{ item.low}}{%endif%}
+                  </span></td>
+                <td>{{ item.created_at|date:"Y-m-d H:i:s" }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="10" align="center"><span style="color:#ff0000">没找到相关数据!</span></td></tr>{% endfor %}
+              </tbody>
+            </table>
+            <div style="text-align: right; border-top: 1px solid #eee">
+              <div class="row">
+                <div class="col-sm-2">
+                  <div class="btn-group pagination" style="float: left">
+                    <button type="button" class="btn btn-info">Action</button>
+                    <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
+                      <span class="caret"></span><span class="sr-only">Toggle Dropdown</span>
+                    </button>
+                    <ul class="dropdown-menu" role="menu">{% if perm.scan.delete_taskinfo%}
+                      <li><a href="#" class="btn-ops" role="del">删除所选任务</a></li>
+                      <li class="divider"></li>{%endif%}{% if perm.scan.add_taskinfo%}
+                      <li><a href="#" class="btn-ops" role="re-scan">重新发送扫描</a></li>{%endif%}
+                    </ul>
+                  </div>
+                </div>
+                <div class="col-sm-10" style="text-align: right">{{ page.render }}</div>
+              </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+          {% include "./__add_task_modal.html" %}
+          <!-- /.box -->
+        </div>
+        <!-- /.col -->
+      </div>
+    </div>
+    <!-- /.row -->
+  </section>
+  <!-- /.content -->
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="/static/plugins/toastr/toastr.min.js"></script>
+<link href="/static/plugins/toastr/toastr.min.css" rel="stylesheet" type="text/css"/>
+<link rel="stylesheet" href="/static/bower_components/select2/css/select2.min.css">
+<link rel="stylesheet" href="/static/css/AdminLTE.min.css">
+<script src="/static/bower_components/select2/js/select2.full.min.js"></script>
+<script src="/static/js/laydate/laydate.js"></script>
+<script>
+    $(function () {
+         laydate.render({
+             elem: '#dt',
+             range: true,
+             value: '{{ form_dt }}'
+         });
+
+        $(".tooltip_func").tooltip();
+        $('.select2').select2();
+        toastr.options = {
+                closeButton: false,
+                debug: false,
+                progressBar: true,
+                onclick: null,
+                showDuration: "300",
+                hideDuration: "1000",
+                timeOut: "5000",
+                extendedTimeOut: "1000",
+                showEasing: "swing",
+                hideEasing: "linear",
+                showMethod: "fadeIn",
+                hideMethod: "fadeOut"
+            };
+        {% if request.GET.errmsg%}
+            toastr.error("{{ request.GET.errmsg }}");
+        {% endif %}
+        {% if request.GET.msg%}
+            toastr.success("{{ request.GET.msg }}");
+        {% endif %}
+
+        $('.task_group').select2({
+            placeholder: '请选择任务分组',
+            ajax: {
+                delay: 250,
+                url: '/scan/group/search/',
+                type: "post",
+                data: function (params) {
+                    var query = {
+                        q: params.term,
+                        csrfmiddlewaretoken: getCookie('csrftoken'),
+                        role: 'task_group'
+                    };
+                    return query;
+                }, processResults: function (data, params) {
+                    return {results: data};
+                }
+            }
+        });
+        $('#group').select2({
+            placeholder: '请选择项目分组',
+            ajax: {
+                delay: 250,
+                url: '/project/group/search/',
+                type: "post",
+                data: function (params) {
+                    var query = {
+                        q: params.term,
+                        csrfmiddlewaretoken: getCookie('csrftoken'),
+                        role: 'group'
+                    };
+                    return query;
+                }, processResults: function (data, params) {
+                    return {results: data};
+                }
+            }
+        });
+
+        $('#project').select2({
+            placeholder: '请选择项目',
+            ajax: {
+                delay: 250,
+                url: '/project/group/search/',
+                type: "post",
+                data: function (params) {
+                    var query = {
+                        q: params.term,
+                        csrfmiddlewaretoken: getCookie('csrftoken'),
+                        role: 'project',
+                        group_id: $('#group').val()
+                    };
+                    return query;
+                }, processResults: function (data, params) {
+                    $("#app").select2("val", "");
+                    return {results: data};
+                }
+            }
+        });
+
+        $('.app').select2({
+            placeholder: '请选择应用',
+            ajax: {
+                delay: 250,
+                url: '/project/app/search/',
+                type: "post",
+                data: function (params) {
+                    var query = {
+                        q: params.term,
+                        csrfmiddlewaretoken: getCookie('csrftoken'),
+                        role: 'app',
+                        project_id: $('#project').val()
+                    };
+                    return query;
+                }, processResults: function (data, params) {
+                    return {results: data};
+                }
+            }
+        });
+
+    $("#btn-adv").click(function(){$("#adv").toggle()});
+      $("#switch").change(function(){
+          var sed = $(this).val();
+          switch (sed){
+              case "1": // 扫描单个项目
+                  $(".scan_group").hide();
+                  $(".scan_project").show();
+                  $(".scan_project").attr('required', true);
+                  $(".scan_group").attr('required', false);
+                  break;
+              case "2": // 扫描单个项目组
+                  $(".scan_group").show();
+                  $(".scan_project").hide();
+                  $(".scan_project").attr('required', false);
+                  $(".scan_group").attr('required', true);
+                  break;
+              case "3":
+                 $(".scan_group").hide();
+                  $(".scan_project").hide();
+                  $(".scan_project").attr('required', false);
+                  $(".scan_group").attr('required', false);
+                  $("#branch").show();
+                  $("#branch input").show();
+                  $("#branch input").attr('required', true);
+                  break;
+          }
+      });
+{% if perm.scan.add_taskinfo%}
+        $(".btn-ops").click(function () {
+            var ps = '';
+            var role = $(this).attr('role');
+
+            $("input[name='_selected_action']:checkbox:checked").each(function () {
+                ps = ps + $(this).val() + ",";
+            });
+
+            if (!confirm('确定操作选中的数据吗?')) return false;
+            var csrftoken = getCookie('csrftoken');
+            $.post("/scan/task/batch/",
+                {"ids": ps, "csrfmiddlewaretoken": csrftoken, 'action': role},
+                function (data) { window.location.reload()
+            });
+        });
+    });
+    {%endif%}
+</script>
+{% endblock %}

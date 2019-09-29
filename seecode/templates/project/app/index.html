@@ -1,0 +1,390 @@
+{% extends "base.html" %}
+{%load get_scope_health%}
+{% block body %}
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <h1>项目管理
+      <small>{% if archive%}已归档应用{%endif%}</small>
+    </h1>
+    <ol class="breadcrumb">
+      <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
+      <li>项目管理</li>
+      <li class="active">应用列表</li>
+    </ol>
+  </section>
+  <!-- Main content -->
+  <section class="content">
+    <div class="box">
+      <div class="box-header with-border">
+        <h6 class="box-title"> 应用列表</h6>
+        <!-- /.box-tools -->
+      </div>
+      <!-- /.box-header -->
+      <div class="box-body">
+        <div class="row">
+          <div class="col-md-10">
+            <form class="form-inline" role="form">
+              <input type="hidden" name="archive" value="{{archive}}">
+              <div class="form-group margin-r-5">
+                <select name="g" class="form-control select2" id="group-search" style="min-width: 220px;">{%if group_obj%}
+                  <option value="{{group_obj.id}}">{{group_obj}}</option>
+                  {%elif project_obj%}<option value="{{project_obj.group.id}}">{{project_obj.group}}</option>{%endif%}
+                </select>
+              </div>
+              <div class="form-group margin-r-5">
+                <select name="pro" class="form-control select2" id="project-search" style="min-width: 220px;">{%if project_obj%}
+                  <option value="{{project_obj.id}}">{{project_obj}}</option>{%endif%}</select>
+              </div>
+              <div class="form-group margin-r-5">
+                <select name="r" class="form-control" style="min-width: 80px;">
+                  <option value="">所有</option>
+                  <option value="1" {%if r == '1' %}selected{%endif%}>危险</option>
+                  <option value="2" {%if r == '2' %}selected{%endif%}>警告</option>
+                  <option value="3" {%if r == '3' %}selected{%endif%}>安全</option>
+                  <option value="4" {%if r == '4' %}selected{%endif%}>未扫描</option>
+                  <option value="5" {%if r == '5' %}selected{%endif%}>已扫描</option>
+                </select>
+              </div>
+               <div class="form-group margin-r-5">
+                <input type="text" class="form-control" value="{{form_dt}}" name="dt" placeholder="请选择时间范围"
+                       id="dt" style="width: 190px;">
+              </div>
+              <button type="submit" class="btn bg-navy">查询</button>
+            </form>
+          </div>
+          <div class="col-md-2">
+            <div class="content-toolbar btn-toolbar pull-right clearfix">
+              <div class="btn-group">
+                <a class="dropdown-toggle btn btn-default btn-sm" data-toggle="dropdown" href="#">
+                  <i class="fa fa-list-alt"></i> {% if archive%}已归档应用{%else%}其他操作{%endif%}
+                  <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu model_fields pull-right" role="menu">{% if perm.project.add_applicationinfo%}
+                  <li><a href="#" data-toggle="modal" data-target="#modal-default">创建应用</a></li>{%endif%}
+                  <li class="divider"></li>
+                  <li><a href="?archive=1">已归档应用</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- /.box-body -->
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-12">
+        <div class="box">
+          <!-- /.box-header -->
+          <div class="box-body">
+            <table id="example2" class="table table-hover">
+              <thead>
+              <tr>
+                <th width="5%"><input type="checkbox" id="action-toggle"/></th>
+                <th>应用名称</th>
+                <th>所属组/项目</th>
+                <th>分支</th>
+                <th>语言</th>
+                <th>代码行数</th>
+                <th>健康度</th>
+<!--                <th>漏洞</th>-->
+                <th>状态</th>
+                <th>最近扫描</th>
+              </tr>
+              </thead>
+              <tbody style="font-size: 1.5rem">{% for item in page.object_list %}
+              <tr>
+                <td><input type="checkbox" value="{{ item.id }}" class="action-select" name="_selected_action"/></td>
+                <td title="{{ item.app_name}}"><a href="/project/app/{{item.id}}">{{item.module_name}}</a></td>
+                <td><a href="/project/{{item.project.id}}/">
+                  <span class="label label-default" title="{{item.project.group}}/{{ item.project}}">
+                    {{item.project.group}}/{{ item.project}}</span></a></td>
+                <td><span class="label label-primary">{{ item.repo}} ({{item.repo.last_short_id|default:"-"}})</span></td>
+                <td>{{ item.lang|default:"-" }}</td>
+                <td><span class="label label-default">{{ item.code_total}} 行</span></td>
+                <td title="{{item.risk_scope}}">{% if item.status == 1 %}- {%else%}
+                  <input type="text" disabled class="knob"
+                           data-thickness="0.2" data-angleArc="250" data-angleOffset="-125"
+                           value="{%if item.risk_scope >= 400 or item.risk_scope == 200 %}100{%else%}{{item.risk_scope|get_scope_health}}{%endif%}"
+                           data-width="35" data-height="25" {% if item.risk_scope > 300 %}data-fgColor="#dd4b39" title="危险"
+                  {% elif item.risk_scope > 200%}data-fgColor="#f39c12" title="警告"
+                  {% else%}data-fgColor="#00A65A" title="安全"{%endif%}>{%endif%}</td>
+<!--                <td><span class="badge" style="background: #F96C60">{% if item.critical%}-->
+<!--                  <a href="/scan/issue/?c=3&r=1&app={{item.id}}" style="color:#fff" title="严重: {{ item.critical}}">{{ item.critical}}</a>{%else%}{{ item.critical}}{%endif%}</span>-->
+<!--                  <span class="badge" style="background: #FBB321">{% if item.high%}-->
+<!--                  <a href="/scan/issue/?c=3&r=2&app={{item.id}}" style="color:#fff" title="高危: {{ item.high}}">{{ item.high}}</a>{%else%}{{ item.high}}{%endif%}</span>-->
+<!--                  <span class="badge" style="background: #41CAC0">{% if item.medium%}-->
+<!--                  <a href="/scan/issue/?c=3&r=3&app={{item.id}}" style="color:#fff" title="中危:{{ item.medium}}">{{ item.medium}}</a>{%else%}{{ item.medium}}{%endif%}</span>-->
+<!--                  <span class="badge " style="background: #3C8DBC">{% if item.low%}-->
+<!--                  <a href="/scan/issue/?c=3&r=4&app={{item.id}}" style="color:#fff" title="低危:{{ item.low}}">{{ item.low}}</a>{%else%}{{ item.low}}{%endif%}</span>-->
+<!--                </td>-->
+                <td>{%if item.status == 1%}<span class="label" style="background: #777777">{{ item.get_status_display }}</span>{%elif item.status == 2%}
+                  <span class="label label-success" style="background: #777777">{{ item.get_status_display }}</span>{%elif item.status == 3%}
+                  <span class="label label-danger">{{ item.get_status_display }}</span>{%else%}
+                  <span class="label label-warning">{{ item.get_status_display }}</span>{%endif%}</td>
+                <td>{{ item.last_scan_time|date:"Y-m-d H:i:s"|default:"-" }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="10" align="center"><span style="color:#ff0000">没找到相关应用!</span></td></tr>
+              {% endfor %}
+              </tbody>
+            </table>
+
+            <div style="text-align: right; border-top: 1px solid #eee">
+              <div class="row">
+                <div class="col-sm-2">
+                  <div class="btn-group pagination" style="float: left">
+                    <button type="button" class="btn btn-info">Action</button>
+                    <button type="button" class="btn btn-info dropdown-toggle"
+                            data-toggle="dropdown" aria-expanded="true">
+                      <span class="caret"></span>
+                      <span class="sr-only">Toggle Dropdown</span>
+                    </button>
+                    <ul class="dropdown-menu" role="menu">{% if perm.project.delete_applicationinfo%}
+                      <li><a href="#" class="btn-ops" role="del">删除应用</a></li>{%endif%}
+                    </ul>
+                  </div>
+                </div>
+                <div class="col-sm-10" style="text-align: right">{{ page.render }}</div>
+              </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->{% if perm.project.add_applicationinfo%}
+          {% include "./__data_add_modal.html" %}{%endif%}
+          <!-- /.box -->
+        </div>
+        <!-- /.col -->
+      </div>
+    </div>
+    <!-- /.row -->
+  </section>
+  <!-- /.content -->
+</div>
+{% endblock %}
+
+
+{% block script %}
+<script src="/static/plugins/toastr/toastr.min.js"></script>
+<link href="/static/plugins/toastr/toastr.min.css" rel="stylesheet" type="text/css"/>
+<link rel="stylesheet" href="/static/bower_components/select2/css/select2.min.css">
+<link rel="stylesheet" href="/static/css/AdminLTE.min.css">
+<script src="/static/bower_components/select2/js/select2.full.min.js"></script>
+<script src="/static/bower_components/jquery-knob/js/jquery.knob.js"></script>
+<script src="/static/js/laydate/laydate.js"></script>
+<script>
+    $(function () {
+         laydate.render({
+             elem: '#dt',
+             range: true,
+             value: '{{ form_dt }}'
+         });
+   /* jQueryKnob */
+    $(".knob").knob({
+      /*change : function (value) {
+       //console.log("change : " + value);
+       },
+       release : function (value) {
+       //console.log("release : " + value);
+       },
+       cancel : function () {
+       //console.log("cancel : " + this.value);
+       },*/
+      draw: function () {
+
+        // "tron" case
+        if (this.$.data('skin') == 'tron') {
+
+          var a = this.angle(this.cv)  // Angle
+              , sa = this.startAngle          // Previous start angle
+              , sat = this.startAngle         // Start angle
+              , ea                            // Previous end angle
+              , eat = sat + a                 // End angle
+              , r = true;
+
+          this.g.lineWidth = this.lineWidth;
+
+          this.o.cursor
+          && (sat = eat - 0.3)
+          && (eat = eat + 0.3);
+
+          if (this.o.displayPrevious) {
+            ea = this.startAngle + this.angle(this.value);
+            this.o.cursor
+            && (sa = ea - 0.3)
+            && (ea = ea + 0.3);
+            this.g.beginPath();
+            this.g.strokeStyle = this.previousColor;
+            this.g.arc(this.xy, this.xy, this.radius - this.lineWidth, sa, ea, false);
+            this.g.stroke();
+          }
+
+          this.g.beginPath();
+          this.g.strokeStyle = r ? this.o.fgColor : this.fgColor;
+          this.g.arc(this.xy, this.xy, this.radius - this.lineWidth, sat, eat, false);
+          this.g.stroke();
+
+          this.g.lineWidth = 2;
+          this.g.beginPath();
+          this.g.strokeStyle = this.o.fgColor;
+          this.g.arc(this.xy, this.xy, this.radius - this.lineWidth + 1 + this.lineWidth * 2 / 3, 0, 2 * Math.PI, false);
+          this.g.stroke();
+
+          return false;
+        }
+      }
+    });
+    /* END JQUERY KNOB */
+        $('.select2').select2();
+        toastr.options = {
+            closeButton: false,
+            debug: false,
+            progressBar: true,
+            onclick: null,
+            showDuration: "300",
+            hideDuration: "1000",
+            timeOut: "5000",
+            extendedTimeOut: "1000",
+            showEasing: "swing",
+            hideEasing: "linear",
+            showMethod: "fadeIn",
+            hideMethod: "fadeOut"
+        };
+        {%if request.GET.errmsg %}
+        toastr.error("{{ request.GET.errmsg }}");
+        {%endif %}
+        {%if request.GET.msg %}
+        toastr.success("{{ request.GET.msg }}");
+        {%endif %}
+
+        $('#group-search').select2({
+            placeholder: '请选择项目分组',
+            ajax: {
+                delay: 250,
+                url: '/project/group/search/',
+                type: "post",
+                data: function (params) {
+                    var query = {
+                        q: params.term,
+                        csrfmiddlewaretoken: getCookie('csrftoken'),
+                        role: 'group'
+                    };
+                    return query;
+                }, processResults: function (data, params) {
+                    $("#project-search").select2("val", "");
+                    return {results: data};
+                }
+            }
+        });
+
+        $('#project-search').select2({
+            placeholder: '请选择项目',
+            ajax: {
+                delay: 250,
+                url: '/project/group/search/',
+                type: "post",
+                data: function (params) {
+                    var query = {
+                        q: params.term,
+                        csrfmiddlewaretoken: getCookie('csrftoken'),
+                        role: 'project',
+                        group_id: $("#group-search").val()
+                    };
+                    return query;
+                }, processResults: function (data, params) {
+                    $("#app").select2("val", "");
+                    return {results: data};
+                }
+            }
+        });
+
+       //modal
+        $('#group').select2({
+            placeholder: '请选择一个项目分组',
+            ajax: {
+                delay: 250,
+                url: '/project/group/search/',
+                type: "post",
+                data: function (params) {
+                    var query = {
+                        q: params.term,
+                        csrfmiddlewaretoken: getCookie('csrftoken'),
+                        role: 'group'
+                    };
+                    return query;
+                }, processResults: function (data, params) {
+                    $("#project").select2("val", "");
+                    return {
+                        results: data
+                    };
+                }
+            }
+        });
+
+        $('#project').select2({
+            placeholder: '请选择一个项目',
+            ajax: {
+                delay: 250,
+                url: '/project/group/search/',
+                type: "post",
+                data: function (params) {
+                    var query = {
+                        q: params.term,
+                        csrfmiddlewaretoken: getCookie('csrftoken'),
+                        role: 'project',
+                        group_id:$("#group").val()
+                    };
+                    return query;
+                }, processResults: function (data, params) {
+                    $("#branch").select2("val", "");
+                    return {
+                        results: data
+                    };
+                }
+            }
+        });
+
+        $('#branch').select2({
+            placeholder: '请选择一个分支',
+            ajax: {
+                delay: 250,
+                url: '/project/app/search/',
+                type: "post",
+                data: function (params) {
+                    var query = {
+                        q: params.term,
+                        csrfmiddlewaretoken: getCookie('csrftoken'),
+                        role: 'branch',
+                        project_id:$("#project").val()
+                    };
+                    return query;
+                }, processResults: function (data, params) {
+                    return {
+                        results: data
+                    };
+                }
+            }
+        });
+
+        $(".btn-ops").click(function () {
+            var ps = '';
+            var role = $(this).attr('role');
+
+            $("input[name='_selected_action']:checkbox:checked").each(function () {
+                ps = ps + $(this).val() + ",";
+            });
+
+            if (!confirm('确定操作选中的数据吗?')) return false;
+            var csrftoken = getCookie('csrftoken');
+
+            $.post("/project/app/batch/", {"ids": ps, "csrfmiddlewaretoken": csrftoken, 'action': role},
+                function (data) {
+                     window.location.reload()
+                });
+        });
+
+    });
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,355 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <h1>项目管理<small>{{model.name}}</small></h1>
+    <ol class="breadcrumb">
+      <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
+      <li>项目管理</li>
+      <li><a href="/project/">项目列表</a></li>
+      {% if model %}
+      <li class="active">{{ model }}</li>
+      {%endif%}
+    </ol>
+  </section>
+  <!-- Main content -->
+  <section class="content">
+    <div class="row">
+      <div class="col-xs-12">
+        <!-- /.box-header -->
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}{% if model%}
+          <input type="hidden" value="{{ model.id }}" name="p_id"/>{%endif%}
+          <div class="nav-tabs-custom">
+            <ul class="nav nav-tabs">
+              <li class="active"><a href="#fa-icons" data-toggle="tab">基本信息</a></li>
+              {%if model.type == 1%}
+              <li><a href="#member" data-toggle="tab">项目成员({{member_count}})</a></li>
+              <li><a href="#branch" data-toggle="tab">项目分支({{repo_list.count|default:"0"}})</a></li>{%endif%}
+              <!--li><a href="#app" data-toggle="tab">应用列表({{app_list.count|default:"0"}})</a></li-->
+            </ul>
+            <div class="tab-content">
+              <!-- base -->
+              <div class="tab-pane active" id="fa-icons">
+                <div class="table-responsive">
+                  <table class="table">
+                    <tr>
+                      <th style="border: 0px;width:180px; padding-left: 35px;">项目名称：</th>
+                      <td align="left" style="border: 0px;">{{model.name}}</td>
+                    </tr>
+                     <tr>
+                      <th style="width:180px; padding-left: 35px;">项目描述：</th>
+                       <td align="left"><pre>{{model.description|default:"-"}}</pre></td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">所属分组：</th>
+                      <td align="left"><span class="label label-primary">{{model.group}}</span></td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">项目类型：</th>
+                      <td align="left">{%if model.type == 1%}
+                        <span class="label label-info">{{model.get_type_display}}</span>
+                        {%else%}<span class="label label-default">{{model.get_type_display}} </span>{%endif%}
+                      </td>
+                    </tr>
+                    {%if model.type == 2%}
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">项目文件：</th>
+                      <td align="left">{{model.path|default:"-"}}</td>
+                    </tr>
+                     <tr>
+                      <th style="width:180px; padding-left: 35px;">项目大小：</th>
+                      <td align="left">{% widthratio model.file_size 1000.0 1%} KB</td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">项目MD5：</th>
+                      <td align="left">{{model.file_hash|default:"-"}}</td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">源文件名称：</th>
+                      <td align="left">{{model.file_origin_name|default:"-"}}</td>
+                    </tr>{%else%}
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">默认分支：</th>
+                      <td align="left">{{model.default_branch|default:"-"}}</td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">Gitlab Web：</th>
+                      <td align="left">
+                        <a href="{{model.web_url|default:''}}" target="_blank">
+                          {{model.web_url|default:""}}</a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">Gitlab HTTP：</th>
+                      <td align="left">
+                        <span class="label label-default">{{model.http_url_to_repo|default:"-"}}</span></td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">Gitlab SSH：</th>
+                      <td align="left"><span class="label label-default">{{model.ssh_url_to_repo|default:"-"}}</span></td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">GitLab ID：</th>
+                      <td align="left">{{model.git_id|default:"-"}}</td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">GitLab 创建时间：</th>
+                      <td align="left">{{model.git_created_at|date:"Y-m-d H:i:s"|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">GitLab 最近活动时间：</th>
+                      <td align="left">{{model.git_last_activity_at|date:"Y-m-d H:i:s"|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                      <th style="padding-left: 35px;">相关信息：</th>
+                      <td align="left">
+                        <a href="/project/app/?pro={{model.id}}"><span class="label label-default">查看应用</span></a>
+                      </td>
+                    </tr>{%endif%}
+                    <tr>
+                      <th></th>
+                      <td><button type="button" class="btn btn-warning" onclick="javascript:window.history.back()">返回
+                        </button>
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              <!-- /#fa-icons -->
+
+              <!-- /#member -->
+              <div class="tab-pane" id="member">
+                <div class="table-responsive">
+                  <table class=" table">
+                    <thead>
+                    <tr>
+                      <th>GIT ID</th>
+                      <th>姓名</th>
+                      <th>邮箱</th>
+                      <th>状态</th>
+                      <th>地址</th>
+                    </tr>
+                    </thead>
+                    <tbody>{%for item in project_members%}
+                    <tr>
+                      <td>{{item.member.git_id}}</td>
+                      <td>
+                          {% if item.access_level == 50%}<span class="label label-primary">所有者
+                          {% elif item.access_level == 40%}<span class="label label-info">主程序员
+                          {% elif item.access_level == 30%}<span class="label label-info">开发人员
+                          {% elif item.access_level == 20%}<span class="label label-info">报告者
+                              {% elif item.access_level == 10%}<span class="label label-info">访客
+                          {%endif%}
+                        </span> &nbsp;{{item.member.name}} </td>
+                      <td>{% if item.member.employee%} {{item.member.employee.email}} {%else%}-{%endif%}</td>
+                      <td>{%if item.member.state%}<span class="label label-success">活跃</span>
+                        {%else%}<span class="label label-danger">禁用</span>{%endif%}</td>
+                      <td><a href="{{item.member.web_url}}" target="_blank">{{item.member.web_url}}</a></td>
+                    </tr>
+                    {%empty%}
+                    {%endfor%}
+                    {%for item in group_members%}
+                    <tr>
+                      <td>{{item.member.git_id}}</td>
+                      <td>
+                          {% if item.access_level == 50%}<span class="label label-primary">所有者
+                          {% elif item.access_level == 40%}<span class="label label-info">主程序员
+                          {% elif item.access_level == 30%}<span class="label label-info">开发人员
+                          {% elif item.access_level == 20%}<span class="label label-info">报告者
+                          {% elif item.access_level == 10%}<span class="label label-info">访客
+                          {%endif%}
+                        </span> &nbsp;{{item.member.name}} <i class="fa fa-fw fa-group" title="{{model.group}} 组成员"></i></td>
+                      <td>{% if item.member.employee%} {{item.member.employee.email}} {%else%}-{%endif%}</td>
+                      <td>{%if item.member.state%}<span class="label label-success">活跃</span>
+                        {%else%}<span class="label label-danger">禁用</span>{%endif%}</td>
+                      <td><a href="{{item.member.web_url}}" target="_blank">{{item.member.web_url}}</a></td>
+                    </tr>
+                    {%endfor%}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- /#branch -->
+              <div class="tab-pane" id="branch">
+                <div class="table-responsive">
+                  <table class=" table">
+                    <thead>
+                    <tr>
+                      <th scope="col" class="action-checkbox-column">ID</th>
+                      <th width="25%">分支</th>
+                      <th>提交者</th>
+                      <th>作者邮箱</th>
+                      <th>提交日期</th>
+                      <th>更新日期</th>
+                      <th>发现日期</th>
+                    </tr>
+                    </thead>
+                    <tbody>{%for item in repo_list%}
+                    <tr>
+                      <td class="action-checkbox">{{item.id}}</td>
+                      <td><span class="label label-primary">{{item.name}} ({{item.last_short_id|default:"-"}})</span>
+                        <a href="{{model.web_url}}/tree/{{item.name}}" target="_blank"><i class="fa fa-location-arrow"></i></a></td>
+                      <td>{{item.last_author_email|default:"-"}}</td>
+                      <td>{{item.committed_date|date:"Y-m-d H:i:s"|default:"-" }}</td>
+                      <td>{{item.updated_at|date:"Y-m-d H:i:s"|default:"-"  }}</td>
+                      <td>{{item.created_at|date:"Y-m-d H:i:s"|default:"-"  }}</td>
+                    </tr>
+                    {%endfor%}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+               <!-- /#branch -->
+              <div class="tab-pane" id="app">
+                <div class="table-responsive">
+                  <table class=" table">
+                    <thead>
+                    <tr>
+                      <th width="15%">应用名称</th>
+                      <th>分支名称</th>
+                      <th>Hash</th>
+                      <th>Size</th>
+                      <th>语言</th>
+                      <th>最后扫描</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {%for item in app_list%}
+                    <tr>
+                      <td><a href="/project/app/{{item.id}}/" target="_blank">{{item.app_name}}</a></td>
+                      <td>{{item.repo|default:"-"}} </td>
+                      <td>{{item.repo.last_short_id|default:"-"}} </td>
+                      <td>{{item.size|default:"-" }} KB</td>
+                      <td>{{item.lang|default:"-"  }}</td>
+                      <td>{{item.last_scan_time|date:"Y-m-d H:i:s"|default:"-"  }}</td>
+                    </tr>
+                    {%endfor%}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <!-- /.tab-content -->
+          </div>
+          <!-- /.nav-tabs-custom -->
+        </form>
+        <!-- /.col -->
+      </div>
+    </div>
+
+
+      <!-- row -->
+    <div class="row">
+        <div class="col-md-12">
+          <!-- The time line -->
+          <ul class="timeline" id="more">
+            {%for date, items in changelog_groups.items%}
+             <li class="time-label"><span class="bg-red">{{date}}</span></li>
+            {% for item in items%}
+            {% if item.is_first%}
+            <li>
+              <i class="fa fa-database bg-purple" ></i>
+              <div class="timeline-item">
+                <span class="time"><i class="fa fa-clock-o"></i> <span class="time-node" title="{{item.created_at|date:"Y-m-d H:i:s"}}">{{item.created_at|date:"Y-m-d H:i:s"}}</span></span>
+                <h3 class="timeline-header"><b>{{item.title}}</b></h3>
+                <div class="timeline-body">{{item.description}}</div>
+              </div>
+            </li>
+            <li>
+              <i class="fa fa-clock-o bg-gray"></i>
+              {%if model.type == 1%}
+              <span class="label" style="margin-left:55px;color:#999;">在 GitLab 创建于 {{model.git_created_at|date:"Y-m-d H:i:s"|default:"-" }}</span>
+            {%endif%}
+            </li>
+            {%else%}
+            <li>
+              <i class="{{item.get_type_display}}"></i>
+              <div class="timeline-item">
+                <span class="time"><i class="fa fa-clock-o"></i> <span class="time-node" title="{{item.created_at|date:"Y-m-d H:i:s"}}">{{item.created_at|date:"Y-m-d H:i:s"}}</span></span>
+                <h3 class="timeline-header"><b>{{item.title}}</b></h3>
+                <div class="timeline-body">{{item.description}}</div>
+              </div>
+            </li>
+            {%endif%}
+            {%endfor%}
+            {%endfor%}
+          </ul>
+        </div>
+        <!-- /.col -->
+      </div>
+      <!-- /.row -->
+
+    <!-- /.row -->
+  </section>
+  <!-- /.content -->
+
+</div>
+{% endblock %}
+{% block script %}
+<script src="/static/plugins/toastr/toastr.min.js"></script>
+<link href="/static/plugins/toastr/toastr.min.css" rel="stylesheet" type="text/css"/>
+<link rel="stylesheet" href="/static/bower_components/select2/css/select2.min.css">
+<link rel="stylesheet" href="/static/css/AdminLTE.min.css">
+<script src="/static/bower_components/select2/js/select2.full.min.js"></script>
+<script>
+    $(function () {
+        $('#org-dept').select2({
+            placeholder: '请选择所属部门',
+            ajax: {
+                delay: 250,
+                url: '/sys/dept/search/',
+                type: "post",
+                data: function (params) {
+                    var query = {
+                        q: params.term,
+                        csrfmiddlewaretoken: getCookie('csrftoken'),
+                    };
+                    return query;
+                }, processResults: function (data, params) {
+                    $("#project").select2("val", "");
+                    return {results: data};
+                }
+            }
+        });
+    });
+</script>
+
+<script>
+        $(function () {
+            $(".time-node").each(function () {
+                $(this).text(getDateDiff(getDateTimeStamp($(this).text())))
+
+                //$(this).html(getDateDiff($(this).val()))
+            });
+            $(".assets-list-btn").click(function () {
+                var ps = '';
+                var role = $(this).attr('role');
+
+                $("input[name='_selected_action']:checkbox:checked").each(function () {
+                    ps = ps + $(this).val() + ",";
+                });
+
+                if (role != 'asset-export-all') {
+                    if (ps == '' || ps == undefined) return false;
+                    if (!confirm('确定操作选中的数据吗?')) return false;
+                }
+
+                var csrftoken = getCookie('csrftoken');
+
+                $.post("/asset/batch", {"ids": ps, "csrfmiddlewaretoken": csrftoken, 'action': role},
+                    function (data) {
+                        if (data.ok == 1 && (role == 'asset-export-select' || role == 'asset-export-all')) {
+                            alert("导出成功!");
+                        }
+                        window.location.href = '/asset';
+                    });
+            });
+        });
+
+    </script>
+{% endblock %}
+

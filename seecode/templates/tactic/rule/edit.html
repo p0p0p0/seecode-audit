@@ -1,0 +1,447 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <h1>规则策略
+      <small>{{ model }}</small>
+    </h1>
+    <ol class="breadcrumb">
+      <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
+      <li>策略管理</li>
+      <li><a href="/tactic/rule/">规则策略</a></li>
+      <li class="active">{{ model }}</li>
+    </ol>
+  </section>
+  <!-- Main content -->
+  <section class="content">
+    <div class="row">
+      <div class="col-xs-12">
+        <!-- /.box-header -->{%if perm.tactic.change_tacticinfo%}
+        <form class="form-horizontal" method="post" novalidate>
+          {% csrf_token %}{% if model%}
+          <input type="hidden" value="{{ model.id }}" name="tactic_id"/>{%endif%}{%endif%}
+          <div class="nav-tabs-custom">
+            <ul class="nav nav-tabs">
+              <li class="active"><a href="#fa-icons" data-toggle="tab">基本信息</a></li>
+              {%if model.engine.module_name == 'seecode_scanner.lib.engines.rulescanner'%}
+              <li><a href="#fa-content" data-toggle="tab">规则设置</a></li>
+              {%elif model.engine.module_name == 'seecode_scanner.lib.engines.pluginscanner'%}
+              <li><a href="#fa-content" data-toggle="tab">插件设置</a></li>{%endif%}
+              <li><a href="#fa-doc" data-toggle="tab">策略说明</a></li>
+            </ul>
+            <div class="tab-content">
+              <!-- base -->
+              <div class="tab-pane active" id="fa-icons">
+                <div class="table-responsive">
+                  <table class="table" style="width: 680px;">
+                    <tr>
+                      <th style="width:180px; padding-left: 35px; border-top: 0">策略名称：</th>
+                      <td align="left" style="border-top: 0">
+                        <input type="text" name="name" required class="form-control"
+                               placeholder="Sprint 框架反射性 XSS 检测" value="{{model.name}}">
+                      </td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">Key：</th>
+                      <td>
+                        {%if model.engine.module_name == 'seecode_scanner.lib.engines.sonarscanner'%}
+                        <input type="text" name="key" required class="form-control" readonly
+                               placeholder="Sprint 框架反射性 XSS 检测" value="{{model.key}}">
+                        {%else%}
+                        <input type="text" name="key" required class="form-control"
+                               placeholder="Sprint 框架反射性 XSS 检测" value="{{model.key}}">{%endif%}
+                      </td>
+                    </tr>
+                     <tr>
+                      <th style="width:180px; padding-left: 35px;"> 检测引擎：</th>
+                      <td><span class="label label-primary">{{model.engine}}</span></td>
+                    </tr>
+                     <tr>
+                      <th style="width:180px; padding-left: 35px;"> 所属语言/技术：</th>
+                      <td><span class="label label-info">{{model.lang}}</span></td>
+                    </tr>
+                     <tr>
+                      <th style="width:180px; padding-left: 35px;"> 策略类型：</th>
+                      <td>
+                        <select class="form-control" name="tactic_type" style="width: 180px;">
+                          {%for item in tactic_type_list%}
+                          <option value="{{item.0}}" {%if item.0 == model.type%}selected{%endif%}>{{item.1}}</option>
+                          {%endfor%}
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">风险等级：</th>
+                      <td>
+                        <select class="form-control" name="risk" style="width: 180px;">
+                          {%for item in risk_list%}
+                          <option value="{{item.0}}" {%if item.0 == model.risk%}selected{%endif%}>{{item.1}}</option>
+                          {%endfor%}
+                        </select>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">名单类型：</th>
+                      <td>
+                        <select class="form-control" name="nature_type" style="width: 180px;">
+                          <option value="2" {%if model.nature_type == 2%}selected{%endif%}>黑名单</option>
+                          <option value="1" {%if model.nature_type == 1%}selected{%endif%}>白名单</option>
+                        </select>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">关联知识库：</th>
+                      <td>
+                        <input class="form-control" id="kb" placeholder="输入漏洞知识库名称关键字" value="{{kb|default:""}}">
+                        <a href="#" style="padding-top: 15px;font-size: 13px;" id="del-kb-r">删除关联</a>
+                        <input type="hidden" name="kb_id" id="kb_id" value="{{kb.id}}">
+                      </td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">Tag 标签：</th>
+                      <td align="left">
+                        <textarea class="form-control tags" rows="4" name="tags"  id="tags_2">{{tags}}</textarea>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">启用策略：</th>
+                      <td><input type="checkbox" name="is_active" {%if model.is_active%}checked{%endif%}></td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">修订版本：</th>
+                      <td>{{model.revision}}</td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">风险评分：</th>
+                      <td>{{model.risk_scope|default:"-"}}</td>
+                    </tr>
+                    </td>
+                     <tr>
+                      <th style="width:180px; padding-left: 35px;" user="{{model.user}}">最近更新：</th>
+                      <td>{{ model.updated_at|date:"Y-m-d H:i:s" }}</td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">创建时间：</th>
+                      <td>{{ model.created_at|date:"Y-m-d H:i:s" }}</td>
+                    </tr>{%if perm.tactic.change_tacticinfo%}
+                    <tr>
+                      <th></th>
+                      <td><button onclick="javascript:window.history.back()" class="btn btn-primary">返回</button>
+                        <button type="submit" class="btn bg-olive margin">修改</button>
+                      </td>
+                    </tr>{%endif%}
+                  </table>
+                </div>
+              </div>
+
+              <!-- /#fa-content -->
+              <div class="tab-pane" id="fa-content">
+                 {%if model.engine.module_name == 'seecode_scanner.lib.engines.rulescanner'%}
+                <div class="table-responsive">
+                  <table class="table" style="width: 880px;">
+                    <tr>
+                      <th style="width:180px; padding-left: 35px; border-top: 0">检测类型：</th>
+                      <td align="left" style="border-top: 0">
+                         <select class="form-control" name="match_type" id="match_type" style="width: 160px;">
+                       {%for item in match_list%}
+                      <option value="{{item.0}}" {%if model.rule_match_type == item.0%}selected{%endif %}>{{item.1}}</option>{%endfor%}
+                    </select>
+                    </tr>
+                    <tr id="file_match" {%if model.rule_match_type == 3%}{%else%}style="display: none"{%endif%}>
+                      <th style="width:180px; padding-left: 35px;">文件后缀：</th>
+                      <td>
+                        <input class="form-control" name="file_ext" id="file_ext" placeholder=".java,.js,.js" value="{{model.rule_value}}">
+                      </td>
+                    </tr>
+                    <tr id="component" {%if model.rule_match_type == 4%}{%else%}style="display: none"{%endif%}>
+                      <th style="width:180px; padding-left: 35px;">匹配字段：</th>
+                      <td>
+                        <div class="row">
+                          <div class="col-md-4">
+                             <select class="form-control" name="component_match_type" id="component_match_type">{%for item in component_match_list%}
+                              <option value="{{item.0}}" {%if item.0|slugify == model.rule_value%}selected{%endif%}>{{item.1}}</option>{%endfor%}
+                            </select>
+                          </div>
+                          <div class="col-md-2">组件名称：</div>
+                          <div class="col-md-6">
+                            <input class="form-control" name="component_name"
+                             placeholder="如：fastjson" value="{{model.component_name}}">
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">检测正则表达式：</th>
+                      <td><textarea class="form-control" rows="8" name="rule_regex" required id="rule_regex">{{model.rule_regex}}</textarea></td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">正则标志位：</th>
+                      <td> <select class="form-control" name="rule_regex_flag" style="width: 160px;">
+                      <option value="">-</option>
+                      <option value="I" {%if model.rule_regex_flag == 'I'%}selected{%endif %}>忽略大小写</option>
+                      <option value="M" {%if model.rule_regex_flag == 'M'%}selected{%endif %}>匹配多行</option>
+                      <option value="I,M" {%if model.rule_regex_flag == 'I,M'%}selected{%endif %}>忽略大小写/匹配多行</option>
+                      </select></td>
+                    </tr>{%if perm.tactic.change_tacticinfo%}
+                    <tr>
+                      <th></th>
+                      <td><a onclick="javascript:window.history.back()" class="btn btn-primary">返回</a>
+                        <button type="submit" class="btn bg-olive margin">修改</button>
+                      </td>
+                    </tr>{%endif%}
+                  </table>
+                </div>
+                {%elif model.engine.module_name == 'seecode_scanner.lib.engines.pluginscanner'%}
+                <div class="table-responsive">
+                  <table class="table" style="width: 880px;">
+                    <tr>
+                      <th style="width:180px; padding-left: 35px; border-top: 0">插件文件名：</th>
+                      <td align="left" style="border-top: 0">
+                        <input type="text" name="plugin_name" required class="form-control"
+                               value="{{model.plugin_name|default:""}}" placeholder="test_pass_dir"
+                                onkeyup="this.value=this.value.replace(/[^\w_]/g,'');">
+                      </td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">模块名称：</th>
+                      <td><span class="label label-primary">{{model.plugin_module_name|default:""}}</span></td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">插件内容：</th>
+                      <td><textarea class="form-control" name="plugin_content" required
+                                    rows="13">{{model.plugin_content|default:""}}</textarea></td>
+                    </tr>{%if perm.tactic.change_tacticinfo%}
+                    <tr>
+                      <th></th>
+                      <td>
+                        <button onclick="javascript:window.history.back()" class="btn btn-primary">
+                          返回
+                        </button>
+                        <button type="submit" class="btn bg-olive margin">修改</button>
+                      </td>
+                    </tr>{%endif%}
+                  </table>
+                </div>{%endif%}
+              </div>
+
+              <!-- /#fa-doc -->
+              <div class="tab-pane" id="fa-doc">
+                <div class="table-responsive">
+                  <table class="table" style="width: 880px;">
+                    <tr>
+                      <th style="width:180px; padding-left: 35px; border-top: 0">安全意见：</th>
+                      <td align="left" style="border-top: 0">
+                        <textarea class="form-control" name="description" required id="description" rows="13">{{model.description|default:""}}</textarea>
+                        <div class="row" style="max-width: 700px;">
+                          <div class="col-md-9">
+                            <input type="file" accept="image/*" class="form-control" name="img" id="img" style="width: 512px;"></div>
+                          <div class="col-md-2">
+                            <button type="button" id="btn-up-img" class="form-control">上传</button>
+                          </div>
+                          <br/><br/><br/></div>
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">修复意见：</th>
+                      <td><textarea class="form-control" name="solution" required id="solution" rows="13">{{model.solution|default:""}}</textarea>
+                       <div class="row" style="max-width: 700px;">
+                          <div class="col-md-9">
+                            <input type="file" accept="image/*" class="form-control" name="img" id="img1" style="width: 512px;"></div>
+                          <div class="col-md-2">
+                            <button type="button" id="btn-up-img1" class="form-control">上传
+                            </button>
+                          </div>
+                          <br/><br/><br/></div>
+                      </td>
+                    </tr>{%if perm.tactic.change_tacticinfo%}
+                    <tr>
+                      <th></th>
+                      <td><a onclick="javascript:window.history.back()" class="btn btn-primary">返回</a>
+                        <button type="submit" class="btn bg-olive margin">修改</button>
+                      </td>
+                    </tr>{%endif%}
+                  </table>
+                </div>
+              </div>
+
+            </div>
+            <!-- /.tab-content -->
+          </div>
+          <!-- /.nav-tabs-custom -->
+        </form>
+        <!-- /.col -->
+      </div>
+    </div>
+    <!-- /.row -->
+  </section>
+  <!-- /.content -->
+</div>
+{% endblock %}
+
+{% block script %}
+
+<link rel="stylesheet" href="/static/plugins/simplemde/simplemde.min.css">
+<script src="/static/plugins/simplemde/simplemde.min.js"></script>
+<link rel="stylesheet" href="/static/css/jquery-ui.css">
+<script src="/static/js/jquery-ui.js"></script>
+<script src="/static/js/jquery-tags-input/jquery.tagsinput.js"></script>
+<script src="/static/js/tagsinput-init.js"></script>
+<link rel="stylesheet" href="/static/js/jquery-tags-input/jquery.tagsinput.css">
+
+<script type="text/javascript">
+    $(function () {
+        $('.select2').select2();
+        // markdown 富文本
+        var simplemde1 = new SimpleMDE({element: $("#description")[0]});
+        var simplemde2 = new SimpleMDE({element: $("#solution")[0]});
+        $("#btn-up-img").click(function () {
+            var ps = '';
+
+            $("input[name='_selected_action']:checkbox:checked").each(function () {
+                ps = ps + $(this).val() + ",";
+            });
+
+            var csrftoken = getCookie('csrftoken');
+
+            var formData = new FormData();
+            formData.append('file', $('#img')[0].files[0]);
+            formData.append('csrfmiddlewaretoken', csrftoken);
+
+            // 提交ajax的请求
+            $.ajax({
+                url: "/tactic/kb/upload/",
+                type: 'POST',
+                data: formData,
+                processData: false,  // tell jquery not to process the data
+                contentType: false, // tell jquery not to set contentType
+                success: function (data) {
+                    var md = simplemde1.value();
+                    simplemde1.value(md + "\n\n![" + data.name + "](" + data.url_img + ")");
+                    $("#img").val("")
+                }
+            }); // end ajax
+
+        });
+
+        $("#btn-up-img1").click(function () {
+            var ps = '';
+
+            $("input[name='_selected_action']:checkbox:checked").each(function () {
+                ps = ps + $(this).val() + ",";
+            });
+
+            var csrftoken = getCookie('csrftoken');
+
+            var formData = new FormData();
+            formData.append('file', $('#img1')[0].files[0]);
+            formData.append('csrfmiddlewaretoken', csrftoken);
+
+            // 提交ajax的请求
+            $.ajax({
+                url: "/tactic/kb/upload/",
+                type: 'POST',
+                data: formData,
+                processData: false,  // tell jquery not to process the data
+                contentType: false, // tell jquery not to set contentType
+                success: function (data) {
+                    var md = simplemde2.value();
+                    simplemde2.value(md + "\n\n![" + data.name + "](" + data.url_img + ")");
+                    $("#img1").val("")
+                }
+            }); // end ajax
+
+        });
+
+        $("#del-kb-r").click(function(){
+           $("#kb_id").val("");
+           $("#kb").val("");
+        });
+
+        $("#kb").autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    url: "/tactic/kb/search/",
+                    type:'POST',
+                    data: {
+                        q: request.term,
+                        csrfmiddlewaretoken: getCookie('csrftoken')
+                    },
+                    success: function (data) {
+                        response( $.map( data, function( item ) {
+                            return {
+                                value: item.id,
+                                label: item.name,
+                            }
+                        }));
+                    }
+                });
+            },
+             select: function( event, ui ) {
+                event.preventDefault();
+                $("#kb").val(ui.item.label);
+                $("#kb_id").val(ui.item.value);
+            },
+            minLength: 2,
+        });
+            $("#match_type").change(function(){
+            var selected = $(this).val();
+            switch (selected){
+                case "3":
+                    $("#file_match").show();
+                    $("#file_ext").attr('enable');
+                    $("#component_match_type").attr('disable');
+                    $("#component").hide();
+                    break;
+                case "4":
+                    $("#file_match").hide();
+                    $("#file_ext").attr('disable');
+                    $("#component_match_type").attr('enable');
+                    $("#component").show();
+                    break;
+
+                default:
+                    $("#file_match").hide();
+                    $("#file_ext").attr('disable');
+                    $("#component_match_type").attr('disable');
+                    $("#component").hide();
+                    break;
+            }
+        });
+        $("#rule_regex").blur(function(){
+            var rule_regex = $("#rule_regex").val();
+            var csrftoken = getCookie('csrftoken');
+            if (rule_regex.length >=1){
+                $.post("/tactic/rule/verify/", {"content": rule_regex, "csrfmiddlewaretoken": csrftoken,
+                        'role':'regex'},
+                function (data) {
+                    if (data.status == 'failed'){
+                        alert(data.msg);
+                        $("#rule_regex").focus();
+                    }
+
+                });
+            }
+
+        });
+
+        $("#file_ext").blur(function(){
+            var file_ext = $("#file_ext").val();
+            var csrftoken = getCookie('csrftoken');
+            if (file_ext.length >=1){
+                $.post("/tactic/rule/verify/", {"content": file_ext, "csrfmiddlewaretoken": csrftoken, 'role':'file_ext'},
+                function (data) {
+                    if (data.status == 'failed'){
+                        alert(data.msg);
+                        $("#file_ext").focus();
+                    }
+
+                });
+            }
+
+        });
+
+
+    });
+</script>
+{% endblock %}

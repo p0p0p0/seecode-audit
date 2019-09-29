@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <h1>系统管理<small></small></h1>
+    <ol class="breadcrumb">
+      <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
+      <li>系统管理</li>
+      <li class="active">服务管理</li>
+    </ol>
+  </section>
+  <!-- Main content -->
+  <section class="content">
+    <div class="box">
+      <div class="box-header with-border">
+        <h6 class="box-title">服务列表</h6>
+        <!-- /.box-tools -->
+      </div>
+      <!-- /.box-header -->
+      <div class="box-body">
+        <div class="row">
+          <div class="col-md-10">
+            <form class="form-inline m-bot15" role="form">
+              <div class="form-group margin-r-5" style="margin-bottom: 10px;">
+                <input class="form-control" style="width: 240px;" name="t" value="{{ title }}"
+                     placeholder="任务关键字">
+              </div>
+
+              <button type="submit" class="btn bg-navy margin-r-5" style="margin-bottom: 10px;">查询</button>
+            </form>
+          </div>
+          <div class="col-md-2">
+            <div class="content-toolbar btn-toolbar pull-right clearfix">
+              <div class="btn-group">
+                <a class="dropdown-toggle btn btn-default btn-sm" data-toggle="dropdown" href="#">
+                    <i class="fa fa-list-alt"></i> 其他操作 <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu model_fields pull-right" role="menu">
+                  <li><a href="/sys/service/sched/">调度管理</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <!-- /.box-body -->
+    </div>
+
+    <div class="row">
+      <div class="col-xs-12">
+        <div class="box">
+          <!-- /.box-header -->
+          <div class="box-body">
+            <table id="example2" class="table table-hover">
+              <thead>
+              <tr>
+                <th><input type="checkbox" id="action-toggle"/></th>
+                <th>名称</th>
+                <th>模块</th>
+                <th>调度类型</th>
+                <th>调度内容</th>
+                <th>Queue</th>
+                <th>状态</th>
+                <th>最近运行时间</th>
+              </tr>
+              </thead>
+              <tbody>{% for item in page.object_list %}
+              <tr>
+                <td><input type="checkbox" value="{{ item.id }}" class="action-select"
+                       name="_selected_action"/></td>
+                <td><a href="/sys/service/{{item.id}}/"> {{ item.name }}</a></td>
+                <td><span class="label label-info">{{ item.task }}</span></td>
+                <td>
+                  <span class="label label-primary">{% if item.interval %}时间间隔{% elif item.crontab %} CRON 表达式{% endif %}</span>
+                </td>
+                <td><span class="label label-default">
+                  {% if item.interval %}
+                    每 {% widthratio item.interval.every 60 1%} 分钟
+                {% elif item.crontab %}
+                    {{ item.crontab.minute }} {{ item.crontab.hour }}
+                    {{ item.crontab.day_of_week }} {{ item.crontab.day_of_month }}
+                    {{ item.crontab.month_of_year }}
+                  {% endif %}</span>
+                </td>
+                <td>{{ item.queue }}</td>
+                <td>
+                  {% if item.enabled %}<span class="label label-success">启用</span>
+                  {% else %}<span class="label label-danger">禁用</span>
+                  {% endif %}
+                </td>
+                <td>{{ item.last_run_at|date:"Y-m-d H:i:s"|default:"-" }}</td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="10" align="center"><span style="color:#ff0000">没找到相关数据!</span></td>
+              </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+
+            <div style="text-align: right; border-top: 1px solid #eee">
+              <div class="row">
+                <div class="col-sm-2">{%if perm.system.change_schedinfo%}
+                  <div class="btn-group pagination" style="float: left">
+                    <button type="button" class="btn btn-info">Action</button>
+                    <button type="button" class="btn btn-info dropdown-toggle"
+                        data-toggle="dropdown"
+                        aria-expanded="true">
+                      <span class="caret"></span>
+                      <span class="sr-only">Toggle Dropdown</span>
+                    </button>
+                    <ul class="dropdown-menu" role="menu" data-role="rule">
+                      <li><a href="#" class="btn-feed" role="del">禁用所选订阅</a></li>
+                      <li><a href="#" class="btn-feed" role="add">启用所选订阅</a></li>
+                    </ul>
+                  </div>{%endif%}
+                </div>
+                <div class="col-sm-10" style="text-align: right">{{ page.render }}</div>
+              </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+        </div>
+        <!-- /.col -->
+      </div>
+    </div>
+    <!-- /.row -->
+  </section>
+  <!-- /.content -->
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="/static/plugins/toastr/toastr.min.js"></script>
+<link href="/static/plugins/toastr/toastr.min.css" rel="stylesheet" type="text/css"/>
+<script>
+  $(function () {
+    toastr.options = {
+        closeButton: false,
+        debug: false,
+        progressBar: true,
+        onclick: null,
+        showDuration: "300",
+        hideDuration: "1000",
+        timeOut: "5000",
+        extendedTimeOut: "1000",
+        showEasing: "swing",
+        hideEasing: "linear",
+        showMethod: "fadeIn",
+        hideMethod: "fadeOut"
+      };
+    {% if request.GET.errmsg%}
+      toastr.error("{{ request.GET.errmsg }}");
+    {% endif %}
+    {% if request.GET.msg%}
+      toastr.success("{{ request.GET.msg }}");
+    {% endif %}
+
+    $(".btn-feed").click(function () {
+      var ps = '';
+      var role = $(this).attr('role');
+
+      $("input[name='_selected_action']:checkbox:checked").each(function () {
+        ps = ps + $(this).val() + ",";
+      });
+      
+      if (!confirm('确定操作选中的数据吗?')) return false;
+      var csrftoken = getCookie('csrftoken');
+
+      $.post("/sys/feed/batch", {"ids": ps, "csrfmiddlewaretoken": csrftoken, 'action': role},
+        function (data) {
+          window.location.href = '/sys/feed';
+        });
+    });
+
+
+  });
+</script>
+{% endblock %}

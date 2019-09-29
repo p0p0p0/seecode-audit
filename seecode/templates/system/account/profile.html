@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <h1>账户信息
+      <small></small>
+    </h1>
+    <ol class="breadcrumb">
+      <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
+      <li>系统管理</li>
+      <li><a href="/sys/account">账户管理</a></li>
+      <li class="active">{{model}}</li>
+    </ol>
+  </section>
+  <!-- Main content -->
+  <section class="content">
+
+    <div class="row">
+      <div class="col-xs-12">
+        <div class="box">
+          <form action="/sys/account/{{ model.id }}/" method="post">
+            {% csrf_token %}
+            <!-- /.box-header -->
+
+              <div class="nav-tabs-custom">
+                <table class="table">
+                  <tr>
+                    <th style="width:15%">账户名称：</th>
+                    <td align="left">{{model}}</td>
+                  </tr>
+                  <tr>
+                    <th>所属分组：</th>
+                    <td align="left">
+                      {% if perm.auth.change_user and request.user.id != model.id%}
+                      <select class="form-control" style="width: 180px" name="group-id">{%for item in groups%}
+                        <option value="{{item.id}}" {% if item in model.groups.all %}selected{% endif%}>{{item}}</option>
+                        {%endfor%}
+                      </select>
+                      {%else%} {{ model.groups.all.0|default:"-"}} {%endif%}
+                    </td>
+                  </tr>
+                  <tr>
+                    <th style="width:10%">用户状态：</th>
+                    <td align="left">
+                      {% if perm.auth.change_user and request.user.id != model.id%}
+                      <select class="form-control" name="status" style="width: 180px">
+                        <option value="1" {% if model.is_active %}selected{% endif %}>启用</option>
+                        <option value="0" {% if not model.is_active %}selected{% endif %}>禁用</option>
+                      </select>
+                      {%else%} {% if model.is_active %}<span class="label label-success">启用</span>
+                      {%else%}<span class="label label-danger">禁用</span>{%endif%}
+                      {%endif%}
+                    </td>
+                  </tr>
+                  <tr>
+                    <th style="width:10%">用户邮箱：</th>
+                    <td align="left">
+                      {% if perm.auth.change_user%}
+                      <input type="text" value="{{model.email }}" name="email" class="form-control" style="width: 280px">
+                      {%else%} {{model.email }} {%endif%}
+                    </td>
+                  </tr>
+                  <tr>
+                    <th style="width:10%">API Token：</th>
+                    <td align="left">{% if token %}
+                      <span class="label label-primary">{{token|default:"-"}}</span>
+                      <span class="btn btn-info btn-xs btn-ops" role="re-token">重新生成</span>
+                      {% else %} {% if request.user.is_superuser %}
+                      <button type="button" class="btn btn-info btn-ops" role="token">生成 Token</button>
+                      {% else %}- {% endif %}
+                      {% endif %}
+                    </td>
+                  </tr>
+                  <tr>
+                    <th style="width:10%">最后一次登录时间：</th>
+                    <td align="left">{{model.last_login|date:"Y-m-d H:i:s" }}</td>
+                  </tr>
+                  <tr>
+                    <th style="width:10%">注册时间：</th>
+                    <td align="left">{{model.date_joined|date:"Y-m-d H:i:s" }}</td>
+                  </tr>
+                  {% if perm.auth.change_user%}
+                  <tr>
+                    <th style="width:10%"></th>
+                    <td align="left"><button type="submit" class="btn btn-primary" id="submit-rule">修改</button></td>
+                  </tr>
+                  {%endif%}
+                </table>
+                <!-- /.post -->
+              </div>
+
+            <!-- /.col -->
+          </form>
+        </div>
+      </div>
+    </div>
+    <!-- /.row -->
+  </section>
+  <!-- /.content -->
+</div>
+{% endblock %}
+
+{% block script %}
+<link rel="stylesheet" href="/static/css/jquery-ui.css">
+<script src="/static/js/jquery-ui.js"></script>
+<script>
+    $(function () {
+        {% if request.user.is_superuser or request.user.id == model.id %}
+        $(".btn-ops").click(function () {
+            var ps = '';
+            var role = $(this).attr("role");
+            if (!confirm('确定为当前用户生成 API Token 吗?')) return false;
+            var csrftoken = getCookie('csrftoken');
+            $.post("/sys/account/token/",
+                {"user_id": {{ model.id }}, "csrfmiddlewaretoken": csrftoken, 'action': role},
+                function (data) {
+                     window.location.href = '/sys/account/{{model.id }}/';
+                });
+        });
+        {%endif%}
+    });
+
+</script>
+{%endblock %}

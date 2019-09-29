@@ -1,0 +1,36 @@
+mysql:
+  default:
+    host: 10.168.1.2
+    port: 3306
+    username: "seecode_db"
+    password: "*****************"
+    database: "seecode_db_ce"
+  slave:
+    host: 10.168.1.3
+    port: 3306
+    username: "seecode_db"
+    password: "*****************"
+    database: "seecode_db_ce"
+
+redis:
+  host: 10.168.1.1
+  port: 6379
+  db: 1
+  password: "*****************"
+
+memcached:
+  host:
+    172.19.26.1:11211
+    172.19.26.2:11211
+    172.19.26.3:11211
+    172.19.26.4:11211
+  username: seecode
+  password: "*****************"
+
+celery:
+  celery_broker_url: ""
+
+
+env:
+  SEECODE_CELERY_BROKER_URL: "redis://:*****************@10.168.1.4:6379/8"
+  SEECODE_C_FORCE_ROOT: False

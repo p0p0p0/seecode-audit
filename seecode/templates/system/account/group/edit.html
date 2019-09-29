@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+{% block body %}
+{% load get_perms %}
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <h1>账户组管理
+      <small></small>
+    </h1>
+    <ol class="breadcrumb">
+      <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
+      <li>系统管理</li>
+      <li><a href="/sys/account/">账号管理</a></li>
+      <li><a href="/sys/group/">账户组管理</a></li>
+      <li class="active">{{ model.name }}</li>
+    </ol>
+  </section>
+  <!-- Main content -->
+  <section class="content">
+    <div class="box">
+      <!-- /.box-header -->
+      <div class="box-body">
+        <div class="row">{%if perm.auth.change_group%}
+          <form class="form-horizontal" method="post" enctype="multipart/form-data">
+            {% csrf_token %}{%endif%}
+            <div class="table-responsive">
+              <table class="table">
+                <tr>
+                  <th style="width:120px; padding-left: 35px;border:0px">名称(*)：</th>
+                  <td align="left" style="border:0px;padding-bottom: 20px">
+                    <input name="name" required class="form-control" value="{{ model.name }}" style="width: 256px">
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="2" style="font-size: 12px; padding-top: 20px">
+                    <div class="nav-tabs-custom">
+                      <ul class="nav nav-tabs">
+                        <li class="active"><a href="#sys" data-toggle="tab">系统设置</a></li>
+                        <li><a href="#pro" data-toggle="tab">项目管理</a></li>
+                        <li><a href="#task" data-toggle="tab">任务管理</a></li>
+                        <li><a href="#engine" data-toggle="tab">引擎管理</a></li>
+                        <li><a href="#node" data-toggle="tab">节点管理</a></li>
+                      </ul>
+                      <div class="tab-content">
+                        <!-- base -->
+                        <div class="tab-pane active" id="sys">
+                          <div class="table-responsive">
+                            <table class="table" width="99%">
+                              {% for item in modules.sys%}
+                              <tr>
+                                <th style="width:100px; border-top:0px; text-align: right">
+                                  <div class="checkbox">{{item.name}}：</div>
+                                </th>
+                                <td align="left" style="border-top:0px;
+                                                                border-bottom: 1px;">
+                                  <div class="checkbox">
+                                    {%for perm in item.id|get_perms%}
+                                    <label>
+                                      <input class="flat-red" type="checkbox" value="{{ perm.id }}" name="perms"
+                                             {%if perm in model.permissions.all%}checked{%endif%}>{{ perm.name}}
+                                      &nbsp; &nbsp;&nbsp; &nbsp;
+                                    </label>
+                                    {%endfor%}
+                                  </div>
+                                </td>
+                              </tr>
+                              {%endfor%}
+                            </table>
+                          </div>
+                        </div>
+                        <!-- /#sys -->
+                        <div class="tab-pane" id="pro">
+                          <div class="table-responsive">
+                            <table class="table" width="99%">
+                              {% for item in modules.project%}
+                              <tr>
+                                <th style="width:100px; border-top:0px; text-align: right">
+                                  <div class="checkbox">{{item.name}}：</div>
+                                </th>
+                                <td align="left" style="border-top:0px;
+                                                                border-bottom: 1px;">
+                                  <div class="checkbox">
+                                    {%for perm in item.id|get_perms%}
+                                    <label>
+                                      <input class="flat-red" type="checkbox" value="{{ perm.id }}" name="perms"
+                                             {%if perm in model.permissions.all%}checked{%endif%}>{{ perm.name}}
+                                      &nbsp; &nbsp;&nbsp; &nbsp;
+                                    </label>
+
+                                    {%endfor%}
+                                  </div>
+                                </td>
+                              </tr>
+                              {%endfor%}
+                            </table>
+                          </div>
+                        </div>
+                        <!-- /#pro -->
+                        <div class="tab-pane" id="task">
+                          <div class="table-responsive">
+                            <table class="table" width="99%">
+                              {% for item in modules.task%}
+                              <tr>
+                                <th style="width:100px; border-top:0px; text-align: right">
+                                  <div class="checkbox">{{item.name}}：</div>
+                                </th>
+                                <td align="left" style="border-top:0px;
+                                                                border-bottom: 1px;">
+                                  <div class="checkbox">
+                                    {%for perm in item.id|get_perms%}
+                                    <label>
+                                      <input class="flat-red" type="checkbox"
+                                             value="{{ perm.id }}" name="perms"
+                                             {%if perm in model.permissions.all%}checked{%endif%}>{{ perm.name}}
+                                      &nbsp; &nbsp;&nbsp; &nbsp;
+                                    </label>
+
+                                    {%endfor%}
+                                  </div>
+                                </td>
+                              </tr>
+                              {%endfor%}
+                            </table>
+                          </div>
+                        </div>
+                        <!-- /#task -->
+                        <div class="tab-pane" id="engine">
+                          <div class="table-responsive">
+                            <table class="table" width="99%">
+                              {% for item in modules.engine%}
+                              <tr>
+                                <th style="width:100px; border-top:0px; text-align: right">
+                                  <div class="checkbox">{{item.name}}：</div>
+                                </th>
+                                <td align="left" style="border-top:0px;
+                                                                border-bottom: 1px;">
+                                  <div class="checkbox">
+                                    {%for perm in item.id|get_perms%}
+                                    <label>
+                                      <input class="flat-red" type="checkbox"
+                                             value="{{ perm.id }}" name="perms"
+                                             {%if perm in model.permissions.all%}checked{%endif%}>{{ perm.name}}
+                                      &nbsp; &nbsp;&nbsp; &nbsp;
+                                    </label>
+                                    {%endfor%}
+                                  </div>
+                                </td>
+                              </tr>
+                              {%endfor%}
+                            </table>
+                          </div>
+                        </div>
+                        <!-- /#engine -->
+                        <div class="tab-pane" id="node">
+                          <div class="table-responsive">
+                            <table class="table" width="99%">
+                              {% for item in modules.node%}
+                              <tr>
+                                <th style="width:100px; border-top:0px; text-align: right">
+                                  <div class="checkbox">{{item.name}}：</div>
+                                </th>
+                                <td align="left" style="border-top:0px;
+                                                                border-bottom: 1px;">
+                                  <div class="checkbox">
+                                    {%for perm in item.id|get_perms%}
+                                    <label>
+                                      <input class="flat-red" type="checkbox"
+                                             value="{{ perm.id }}" name="perms"
+                                             {%if perm in model.permissions.all%}checked{%endif%}>{{ perm.name}}
+                                      &nbsp; &nbsp;&nbsp; &nbsp;
+                                    </label>
+
+                                    {%endfor%}
+                                  </div>
+                                </td>
+                              </tr>
+                              {%endfor%}
+                            </table>
+                          </div>
+                        </div>
+                        <!-- /#node -->
+                      </div>
+                      <!-- /.tab-content -->
+                    </div>
+
+                  </td>
+                </tr>
+{%if perm.auth.change_group%}
+                <tr>
+                  <th style="border: 0px;"></th>
+                  <td style="border: 0px;">
+                    <button class="btn btn-primary" id="submit-rule" style="width: 80px">修改
+                    </button>
+                  </td>
+                </tr>{%endif%}
+              </table>
+            </div>
+          </form>
+        </div>
+
+      </div>
+      <!-- /.box-body -->
+    </div>
+
+    <!-- /.row -->
+  </section>
+  <!-- /.content -->
+</div>
+{% endblock %}
+
+{% block script %}
+
+{% endblock %}

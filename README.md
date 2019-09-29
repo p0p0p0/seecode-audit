@@ -1,2 +1,23 @@
-# SeeCode Audit Community Edition
-seecode 的主要框架代码，其中包括UI、API等服务
+# seecode
+
+Distributed white box code scanning tool 🔥
+
+## 如何开发
+
+```bash
+$ git clone git@github.com:MyKings/seecode.git
+$ cd seecode && python3 -m venv .
+$ source bin/activate
+$ make runserver
+```
+
+## 如何部署
+
+### 扫描引擎部署
+
+### UI管理部署
+
+
+## 参考说明
+
+

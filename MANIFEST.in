@@ -1,0 +1,8 @@
+include requirements/*.txt
+include CHANGELOG
+include README.rst
+include seecode.yml.sample
+recursive-include * *.xml *.txt *.json *.yml *.html
+recursive-include ./seecode/var *.json *.yml *.html
+recursive-include ./seecode/templates *.html *.js *.css *.gif *.png *.woff *.woff2 *.ttf *.jpg *.ico
+recursive-include extras/script *.*

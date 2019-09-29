@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block body %}
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <h1>系统管理<small></small></h1>
+      <ol class="breadcrumb">
+        <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
+        <li>系统管理</li>
+        <li><a href="/sys/account">账户管理</a></li>
+        <li class="active">账户组管理</li>
+      </ol>
+    </section>
+    <!-- Main content -->
+    <section class="content">
+      <div class="box">
+        <div class="box-header with-border">{%if perm.auth.add_group%}
+          <span style="float: right;font-size: 12px;"><a href="#" data-toggle="modal" data-target="#modal-default"> 添加</a></span>{%endif%}
+          <h6 class="box-title" >账户组列表</h6>
+          <!-- /.box-tools -->
+        </div>
+        <!-- /.box-header -->
+        <div class="box-body">
+          <div>
+            <form class="form-inline m-bot15" role="form">
+              <div class="form-group margin-r-5">
+               <input class="form-control" value="{{name}}" placeholder="组名称" name="group_name">
+              </div>
+              <button type="submit" class="btn bg-navy">开始</button>
+            </form>
+          </div>
+        </div>
+        <!-- /.box-body -->
+      </div>
+
+      <div class="row">
+        <div class="col-xs-12">
+          <div class="box">
+            <!-- /.box-header -->
+            <div class="box-body">
+              <table id="example2" class="table table-hover">
+                <thead>
+                <tr>
+                  <th><input type="checkbox" id="action-toggle"/></th>
+                  <th>组名称</th>
+                  <th>权限数</th>
+                  <th>用户数</th>
+                  <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>{% for item in page.object_list %}
+                <tr>
+                  <td><input type="checkbox" value="{{ item.id }}" class="action-select" name="_selected_action"/></td>
+                  <td><a href="/sys/group/{{ item.id }}" title="{{ item.name }}">{{ item.name }}</a></td>
+                  <td>{{item.permissions.count}}</td>
+                  <td>{{item.user_set.all.count}}</td>
+                  <td>{%if perm.auth.change_group%}
+                    <a href="/sys/group/member/{{item.id}}/">管理账户</a>{%else%}-{%endif%}
+                  </td>
+                </tr>{% empty %}
+                <tr>
+                  <td colspan="10" align="center">
+                    <span style="color:#ff0000">没找到相关数据!</span>
+                  </td></tr>{% endfor %}
+                </tbody>
+              </table>
+
+              <div style="text-align: right; border-top: 1px solid #eee">
+                <div class="row">
+                  <div class="col-sm-2">{%if perm.auth.delete_group%}
+                    <div class="btn-group pagination" style="float: left">
+                      <button type="button" class="btn btn-info">Action</button>
+                      <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
+                        <span class="caret"></span>
+                        <span class="sr-only">Toggle Dropdown</span>
+                      </button>
+                      <ul class="dropdown-menu" role="menu">
+                        <li><a href="#">删除所选组</a></li>
+                      </ul>
+                    </div>{%endif%}
+                  </div>
+                  <div class="col-sm-10" style="text-align: right">{{ page.render }}</div>
+                </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->{%if perm.auth.add_group%}
+          {% include "../inc/__group_add_modal.html" %}{%endif%}
+          <!-- /.box -->
+        </div>
+        <!-- /.col -->
+        </div></div>
+      <!-- /.row -->
+    </section>
+    <!-- /.content -->
+  </div>
+{% endblock %}
+

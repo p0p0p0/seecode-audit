@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <h1>项目组
+      <small></small>
+    </h1>
+    <ol class="breadcrumb">
+      <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
+      <li>项目管理</li>
+      <li><a href="/project/">项目列表</a></li>
+      <li><a href="/project/group/">项目组</a></li>
+      {% if model %}
+      <li class="active">{{ model }}</li>
+      {%endif%}
+    </ol>
+  </section>
+  <!-- Main content -->
+  <section class="content">
+    <div class="row">
+      <div class="col-xs-12">
+        <!-- /.box-header -->
+        <div class="nav-tabs-custom">
+          <ul class="nav nav-tabs">
+            <li class="active"><a href="#fa-icons" data-toggle="tab">基本信息</a></li>
+          </ul>
+          <div class="tab-content">
+            <!-- base -->
+            <div class="tab-pane active" id="fa-icons">
+              <div class="table-responsive">
+                <table class="table">
+                  <tr>
+                    <th style="border: 0px;width:180px; padding-left: 35px;">名 称：</th>
+                    <td align="left" style="border: 0px;">{{model.name}}</td>
+                  </tr>
+                  <tr>
+                    <th style="width:180px; padding-left: 35px;">描 述：</th>
+                    <td align="left">{{model.description|default:"-"}}</td>
+                  </tr>
+                  <tr>
+                    <th style="width:180px; padding-left: 35px;">URL：</th>
+                    <td align="left">{{model.web_url|default:"-"}}</td>
+                  </tr>
+                  <tr>
+                    <th style="width:180px; padding-left: 35px;">GitLab ID：</th>
+                    <td align="left">{%if model.git_id%} {{model.git_id}} {%else%}-{%endif%}</td>
+                  </tr>
+                  <tr>
+                    <th style="width:180px; padding-left: 35px;">GitLab Path：</th>
+                    <td align="left">{{model.path|default:"-"}}</td>
+                  </tr>
+                  <tr>
+                    <th style="width:180px; padding-left: 35px;">类型：</th>
+                    <td align="left">{{model.get_type_display}}</td>
+                  </tr>
+                   <tr>
+                    <th style="width:180px; padding-left: 35px;">项目数：</th>
+                    <td align="left">-</td>
+                  </tr>
+                  <tr>
+                    <th style="width:180px; padding-left: 35px;">成员数：</th>
+                    <td align="left">{{model.members.all.count}}</td>
+                  </tr>
+                  <tr>
+                    <th style="width:180px; padding-left: 35px;">创建时间：</th>
+                    <td align="left">{{model.created_at|date:"Y-m-d H:i:s" }}</td>
+                  </tr>
+                  <tr>
+                    <th></th>
+                    <td><button type="button" class="btn btn-warning" onclick="javascript:window.history.back()">返回
+                      </button>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+            <!-- /#fa-icons -->
+          </div>
+          <!-- /.tab-content -->
+        </div>
+        <!-- /.nav-tabs-custom -->
+        <!-- /.col -->
+      </div>
+    </div>
+    <!-- /.row -->
+  </section>
+  <!-- /.content -->
+</div>
+{% endblock %}
+{% block script %}
+
+{% endblock %}
+

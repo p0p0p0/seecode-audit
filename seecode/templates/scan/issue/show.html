@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <h1>扫描结果
+      <small>{{model}} {% if model.status == 1 %}<span class="label label-warning">{{ model.get_status_display }}</span>
+        {% elif model.status == 2 %}<span class="label label-primary">{{ model.get_status_display }}</span>
+        {% elif model.status == 3 %}<span class="label label-success">{{ model.get_status_display }}</span>
+        {% elif model.status == 4 %}<span class="label label-info">{{ model.get_status_display }}</span>
+        {% elif model.status == 6 %}<span class="label" style="background: #6e4f1c">{{ model.get_status_display }}</span>
+        {% else %}<span class="label label-default">{{ model.get_status_display }}</span>{% endif %}</small>
+    </h1>
+    <ol class="breadcrumb">
+      <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
+      <li>任务管理</li>
+      <li><a href="/scan/issue/">扫描结果</a></li>{% if model %}
+      <li><a href="/project/app/{{model.app.id}}/">{{model.app}}</a></li>
+    </ol>
+  </section>
+  <!-- Main content -->
+  <section class="content">
+    <div class="row">
+      <div class="col-xs-12">
+        <!-- /.box-header -->
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}{% if model%}
+          <input type="hidden" value="{{ model.id }}" name="result_id"/>{%endif%}
+          <div class="nav-tabs-custom">
+            <ul class="nav nav-tabs">
+              <li class="active"><a href="#fa-icons" data-toggle="tab">基本信息</a></li>
+            </ul>
+            <div class="tab-content">
+              <!-- base -->
+              <div class="tab-pane active" id="fa-icons">
+                <div class="table-responsive">
+                  <table class="table">
+                    <tr>
+                      <th style="border: 0px;width:180px; padding-left: 35px;">标题：</th>
+                      <td align="left" style="border: 0px;">
+                        {%ifequal model.tactic.risk 1 %}<span class="text-red text-bold">[{{model.tactic.get_risk_display}}]</span>{%endifequal%}
+                        {%ifequal model.tactic.risk 2 %}<span class="text-yellow text-bold">[{{model.tactic.get_risk_display}}]</span>{%endifequal%}
+                        {%ifequal model.tactic.risk 3 %}<span class="text-aqua text-bold">[{{model.tactic.get_risk_display}}]</span>{%endifequal%}
+                        {%ifequal model.tactic.risk 4 %}<span class="text-blue text-bold">[{{model.tactic.get_risk_display}}]</span>{%endifequal%}
+                        {%if perm.scan.change_issueinfo%}
+                        {{model.title}} <a href="#" data-toggle="modal" data-target="#modal-title"><i
+                        class="fa fa-fw fa-edit" title="点击编辑标题"></i></a>{%endif%}
+                      </td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">类型：</th>
+                      <td align="left" style="font-weight:bold;">{{model.tactic.get_type_display}}</td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">标签：</th>
+                      <td align="left" style="text-transform: uppercase;">{%for item in tags%}<span class="label bg-teal">{{item}}</span> {%empty%}-{%endfor%}
+                      {% if model.is_false_positive %}
+                        <span class="badge tooltip_func" style="background: #F96C60" title="id：{{model.whitelist_rule_id}}， {{model.evidence_content}}">误报</span>{%endif%}
+                      </td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">风险分数：</th>
+                      <td align="left">{%if model.tactic.risk_scope%}{{model.tactic.risk_scope}} 分  {%else%}-{%endif%}</td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">规则策略：</th>
+                      <td align="left"><a href="/tactic/rule/{{model.tactic.id}}/">{{model.tactic.key}}</a></td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">问题文件：</th>
+                      <td align="left">
+                        {% if model.app.project.type == 2 and model.tactic.engine.module_name != 'seecode_scanner.lib.engines.sonarscanner' %}
+                        <span class="label label-default">{{model.file_name}}</span>{%else%}
+                        <a href="{{model.report_detail_url}}" target="_blank">{{model.file_name}}</a>{%endif%}
+                      </td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">开始/结束行：</th>
+                      <td align="left">{{model.start_line}} 行 - {{model.end_line}}行</td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">代码片段：</th>
+                      <td align="left">
+                        <pre>{{code_segment|safe}}</pre>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">最后作者：</th>
+                      <td>{%if model.last_commit_author%}{{model.last_commit_author}}（{{model.last_commit_author_email}}）{%else%}-{%endif%}</td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">Last Commit：</th>
+                      <td align="left">{{model.last_commit|default:"-"}}</td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">SCM 关联：</th>
+                      <td align="left" style="font-size:12px">
+                        {% if model.scm_id %}
+                        <a href="{{model.scm_url}}" title="{{model.scm_url}}" target="_blank">{{model.scm_url}} </a>
+                        <i>{{model.scm_status}}</i>
+                        {%else%}- {%endif%}</td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">最近修改：</th>
+                      <td align="left">{{model.updated_at|date:"Y-m-d H:i:s"}}</td>
+                    </tr>
+                    <tr>
+                      <th style="width:180px; padding-left: 35px;">发现时间：</th>
+                      <td align="left">{{model.created_at|date:"Y-m-d H:i:s"}}</td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              <!-- /#fa-icons -->
+            </div>
+            <!-- /.tab-content -->
+          </div>
+          <!-- /.nav-tabs-custom -->
+        </form>
+        <!-- /.col -->
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-xs-12">
+        <div class="box">
+          <!-- /.box-header -->
+          <div class="box-body">
+            <table id="example2" class="table table-hover">
+              <thead>
+              <tr>
+                <th width="8%">ID</th>
+                <th width="20%">时间</th>
+                <th width="10%">状态</th>
+                <th width="10%">操作人</th>
+                <th>备注说明</th>
+              </tr>
+              </thead>
+              <tbody>{% for item in issue_flows %}
+              <tr>
+                <td style="font-size: 12px;">{{forloop.counter}}</td>
+                <td style="font-size: 12px;">{{ item.created_at|date:"Y-m-d H:i:s" }}</td>
+                <td style="font-size: 12px;">{% if item.status == 1 %}
+                  <span class="label label-warning">{{ item.get_status_display }}</span>
+                  {% elif item.status == 2 %}<span class="label label-primary">{{ item.get_status_display }}</span>
+                  {% elif item.status == 3 %}<span class="label label-success">{{ item.get_status_display }}</span>
+                  {% elif item.status == 4 %}<span class="label label-info">{{ item.get_status_display }}</span>
+                  {% elif item.status == 6 %}<span class="label" style="background: #6e4f1c">{{ item.get_status_display }}</span>
+                  {% else %}<span class="label label-default">{{ item.get_status_display }}</span>{% endif %}</td>
+                <td style="font-size: 12px;">{% if item.behavior == 1%}<span class="label" style="background: #6e4f1c">系统</span>{%else%}
+                  <span class="label label-default">{{ item.user }}</span>{%endif%}</td>
+                <td style="font-size: 12px;">{{ item.comment|default:"-" }}</td>
+              </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+          <!-- /.box -->
+        </div>
+        <!-- /.col -->
+      </div>
+    </div>
+    <!-- /.row -->
+  </section>
+  <!-- /.content -->
+</div>
+{%if perm.scan.change_issueinfo%}
+<div id="toolbar-options" class="hidden">
+  <a href="#" data-toggle="modal" data-target="#modal-default"><i class="fa fa-edit" title="处理问题"></i></a>
+  <a href="#"><i class="fa fa-star-o" title="添加关注列表"></i></a>
+</div>
+
+{% include "./__inc_edit_flow.html" %}
+{% include "./__inc_edit_title.html" %}
+{%endif%}
+{% endblock %}
+
+{% block script %}
+<script src="/static/js/toolbar/jquery.toolbar.js"></script>
+<link href="/static/js/toolbar/jquery.toolbar.css" rel="stylesheet"/>
+<script>
+  $(function(){
+      {%if perm.scan.change_issueinfo%}
+    $('#element').toolbar({
+	content: '#toolbar-options',
+	position: 'bottom',
+	style: 'primary',
+	animation: 'flip'
+});
+      {%endif%}
+  })
+
+
+</script>
+{% endblock %}
+
