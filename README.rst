@@ -36,7 +36,7 @@ SeeCode Audit Community Edition
 **1. 系统设计：**
 -------------------
 
-.. image:: ./images/img1.png
+.. image:: https://seecode-audit.readthedocs.io/en/latest/_images/img1.png
 
 
 1.1 存储层
