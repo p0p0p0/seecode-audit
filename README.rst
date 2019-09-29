@@ -3,6 +3,10 @@ SeeCode Audit Community Edition
 ==========================================
 
 
+.. image:: https://readthedocs.org/projects/seecode-audit/badge/?version=latest
+    :target: https://seecode-audit.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
+
 .. image:: https://img.shields.io/badge/python-3.6|3.7-brightgreen.svg
     :target: https://www.python.org/
 
