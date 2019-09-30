@@ -1,7 +1,7 @@
 ---
 name: BUG 问题提交
 about: 创建报告以帮助我们改进系统
-title: ''
+title: "[BUG]"
 labels: bug
 assignees: MyKings
 
