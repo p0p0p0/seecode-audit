@@ -52,13 +52,6 @@
                 </select>
               </div>
               <div class="form-group margin-r-5">
-                <select class="form-control" name="a">
-                  <option value="">所有类型</option>
-                  <option value="1" {% ifequal alarm '1' %} selected{% endifequal %}>已告警</option>
-                  <option value="2" {% ifequal alarm '2' %} selected{% endifequal %}>同步SCM</option>
-                </select>
-              </div>
-              <div class="form-group margin-r-5">
                 <select class="form-control" name="d">
                   <option value="">所有状态</option>
                   <option value="1" {% ifequal '1' d %} selected{% endifequal %}> 已完成</option>
