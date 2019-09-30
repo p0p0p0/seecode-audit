@@ -260,15 +260,4 @@ INSERT INTO `sca_scan_profile` VALUES (6, 'normal', '包含所有扫描引擎的
 INSERT INTO `sca_scan_profile` VALUES (9, 'component_scan', '组件漏洞扫描模板，只基于规则引擎。', '.git/,bin/,node_modules/,assets/,static/', '.jpg,.jpeg,.png,.bmp,.gif,.ico,.cur,.eot,.otf,.svg,.ttf,.woff,.html,.htm,.css,.less,.scss,.styl,.min.js,.po,.mp3,.mp4,.swf,.exe,.sh,.dll,.so,.bat,.jar,.swp,.crt,.pdf,.doc,.docx,.csv,.md,.properties,.zip,.bak,.tar,.rar,.tar.gz,.rar,.7z,.iso,.db,.spf,.iml,.manifest,.psd,.as,.log,.template,.tpl', '', '', '{\'seecode_scanner.lib.engines.sonarscanner\': {\'ENGINE_TIMEOUT\': 1200, \'HTTP_TIMEOUT\': 10, \'HTTP_TIMEOUT_RETRY\': 3, \'HTTP_FAILED_RETRY\': 3, \'SONAR_PROJECT_PROPERTIES\': \'sonar.projectKey={{project_key}}\\nsonar.projectName={{project_name}}\\nsonar.projectVersion=1.0\\nsonar.sources=.\\nsonar.sourceEncoding=UTF-8\\nsonar.exclusions=**/node_modules/**/*.*,\\nsonar.host.url={{sonar_host}}\\nsonar.login={{sonar_login}}\\nsonar.java.binaries=.\'}, \'seecode_scanner.lib.engines.rulescanner\': {\'ENGINE_TIMEOUT\': 1200}, \'seecode_scanner.lib.engines.pluginscanner\': {\'ENGINE_TIMEOUT\': 1200}}', 0, 0, 0, '2019-06-26 07:41:15.968243', NULL, 1.0, '2019-08-26 09:04:49.477578', NULL, NULL, 7200);
 COMMIT;
 
-
--- ----------------------------
--- Records of sca_conf_widget
--- ----------------------------
-BEGIN;
-INSERT INTO `sca_conf_widget` VALUES (1, 1, 'SOC漏洞同步', 1, '{\'url\': \'http://soc.example.com/api/v2/vuln/\', \'callback\': \'http://seecode-audit.com/api/v2/issue/{{id}}/callback/\', \'method\': \'POST\', \'header\': {\'Authorization\': \'Token 8118a92c68******\', \'Content-Type\': \'application/x-www-form-urlencoded\', \'User-Agent\': \'Mozilla/4.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko\'}, \'body\': {\'bug_title\': \'{{vuln_title}}\', \'bug_assign\': \'{{vuln_assign}}\', \'bug_detail\': \'{{description}}\', \'bug_level\': \'{{risk_key}}\'}, \'callback_token\': \'dc058d563917b9325252*********\'}', 'seecode.libs.widgets.scm.http', '2019-08-28 10:22:20.662287', '2019-08-13 17:46:10.000000');
-INSERT INTO `sca_conf_widget` VALUES (2, 2, '钉钉群提醒（漏洞）', 1, '{\'access_token\': \'29fd417c**********************\'}',
-'seecode.libs.widgets.alarm.dingding', '2019-08-17 03:03:22.637490', '2019-08-13 20:18:35.000000');
-COMMIT;
-
-
 SET FOREIGN_KEY_CHECKS = 1;
