@@ -73,4 +73,19 @@
   - 模块名称：``seecode_scanner.lib.engines.pluginscanner``
 
 
+3. 同步 SonarQube 规则
+========================
+
+
+* 确保 SonarScanner 引擎参数配置正确
+
+登陆 SeeCode Audit 系统后台，点击进入 "引擎管理" - "引擎列表" - "SonarScanner" 进行编辑。
+
+.. image:: ../images/engine/engine_edit.jpg
+
+* 同步 SonarQube 规则操作
+
+登陆 SeeCode Audit 系统后台，点击进入 "引擎管理" - "规则策略" 拉到底部，点击 " Action" 按钮，单机 ``批量同步 Sonar 规则`` 菜单开始同步。
+
+.. image:: ../images/engine/sync_sonar_rule.png
 
